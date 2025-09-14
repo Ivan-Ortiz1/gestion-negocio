@@ -1,0 +1,4 @@
+node_modules/
+frontend/css/styles.css
+.env
+backend/db/database.sqlite

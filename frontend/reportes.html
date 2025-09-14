@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Reportes - Gestión de Negocios</title>
+    <link href="css/styles.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/reportes.js" defer></script>
+  </head>
+  <body class="p-6 bg-gray-100">
+    <h1 class="text-2xl font-bold mb-6">📊 Reportes</h1>
+
+    <!-- Reporte: Ventas por Día -->
+    <section class="mb-8">
+      <h2 class="text-xl font-bold mb-2">Ventas por Día</h2>
+      <table
+        class="table-auto w-full bg-white shadow rounded mb-4 border border-gray-300"
+      >
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border px-4 py-2">Fecha</th>
+            <th class="border px-4 py-2">Total</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-ventas-dia"></tbody>
+      </table>
+      <canvas id="chart-ventas-dia" class="bg-white p-4 rounded shadow"></canvas>
+    </section>
+
+    <!-- Reporte: Ventas por Cliente -->
+    <section class="mb-8">
+      <h2 class="text-xl font-bold mb-2">Ventas por Cliente</h2>
+      <table
+        class="table-auto w-full bg-white shadow rounded mb-4 border border-gray-300"
+      >
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border px-4 py-2">Cliente</th>
+            <th class="border px-4 py-2">Total</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-ventas-cliente"></tbody>
+      </table>
+      <canvas
+        id="chart-ventas-cliente"
+        class="bg-white p-4 rounded shadow"
+      ></canvas>
+    </section>
+
+    <!-- Reporte: Productos más Vendidos -->
+    <section class="mb-8">
+      <h2 class="text-xl font-bold mb-2">Productos Más Vendidos</h2>
+      <table
+        class="table-auto w-full bg-white shadow rounded mb-4 border border-gray-300"
+      >
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border px-4 py-2">Producto</th>
+            <th class="border px-4 py-2">Cantidad Vendida</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-productos"></tbody>
+      </table>
+      <!-- Podemos agregar un gráfico de barras para productos más vendidos -->
+      <canvas
+        id="chart-productos"
+        class="bg-white p-4 rounded shadow"
+      ></canvas>
+    </section>
+
+    <!-- Navegación -->
+    <div class="mt-6">
+      <a href="index.html" class="text-blue-500 hover:underline mr-4"
+        >Volver a Productos</a
+      >
+      <a href="ventas.html" class="text-blue-500 hover:underline"
+        >Volver a Ventas</a
+      >
+    </div>
+  </body>
+</html>

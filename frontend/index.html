@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Login - Gestión de Negocios</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center h-screen bg-gray-100">
+
+<div class="w-96 bg-white p-8 rounded shadow">
+    <h1 class="text-2xl font-bold mb-6 text-center">Gestión de Negocios</h1>
+
+    <!-- Login -->
+    <form id="form-login">
+        <div class="mb-4">
+            <label class="block mb-1">Usuario</label>
+            <input type="text" id="usuarioLogin" class="w-full border p-2 rounded" required>
+        </div>
+        <div class="mb-4">
+            <label class="block mb-1">Contraseña</label>
+            <input type="password" id="contrasenaLogin" class="w-full border p-2 rounded" required>
+        </div>
+        <p id="errorLogin" class="text-red-500 mb-2 hidden"></p>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded w-full">Iniciar sesión</button>
+        <p class="mt-2 text-sm text-center">
+            ¿No tienes cuenta? <button type="button" id="btn-show-register" class="text-blue-500 underline">Regístrate</button>
+        </p>
+    </form>
+
+    <!-- Registro -->
+    <form id="form-registro" class="hidden">
+        <div class="mb-4">
+            <label class="block mb-1">Usuario</label>
+            <input type="text" id="usuarioRegistro" class="w-full border p-2 rounded" required>
+        </div>
+        <div class="mb-4">
+            <label class="block mb-1">Contraseña</label>
+            <input type="password" id="contrasenaRegistro" class="w-full border p-2 rounded" required>
+        </div>
+        <p id="errorRegistro" class="text-red-500 mb-2 hidden"></p>
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded w-full">Registrarse</button>
+        <p class="mt-2 text-sm text-center">
+            ¿Ya tienes cuenta? <button type="button" id="btn-show-login" class="text-blue-500 underline">Inicia sesión</button>
+        </p>
+    </form>
+</div>
+
+<script>
+const formLogin = document.getElementById('form-login');
+const formRegistro = document.getElementById('form-registro');
+const btnShowRegister = document.getElementById('btn-show-register');
+const btnShowLogin = document.getElementById('btn-show-login');
+const errorLogin = document.getElementById('errorLogin');
+const errorRegistro = document.getElementById('errorRegistro');
+
+// Alternar formularios
+btnShowRegister.addEventListener('click', () => {
+    formLogin.classList.add('hidden');
+    formRegistro.classList.remove('hidden');
+    errorLogin.classList.add('hidden');
+});
+
+btnShowLogin.addEventListener('click', () => {
+    formRegistro.classList.add('hidden');
+    formLogin.classList.remove('hidden');
+    errorRegistro.classList.add('hidden');
+});
+
+// Login
+formLogin.addEventListener('submit', async e => {
+    e.preventDefault();
+    const usuario = document.getElementById('usuarioLogin').value;
+    const contrasena = document.getElementById('contrasenaLogin').value;
+
+    try {
+        const res = await fetch('http://localhost:3000/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario, contrasena })
+        });
+        const data = await res.json();
+        if(data.success){
+            localStorage.setItem('usuario', data.usuario);
+            window.location.href = 'ventas.html';
+        } else {
+            errorLogin.textContent = data.message;
+            errorLogin.classList.remove('hidden');
+        }
+    } catch(err){
+        errorLogin.textContent = 'No se pudo conectar al servidor';
+        errorLogin.classList.remove('hidden');
+    }
+});
+
+// Registro
+formRegistro.addEventListener('submit', async e => {
+    e.preventDefault();
+    const usuario = document.getElementById('usuarioRegistro').value;
+    const contrasena = document.getElementById('contrasenaRegistro').value;
+
+    try {
+        const res = await fetch('http://localhost:3000/registrar-admin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario, contrasena })
+        });
+        const data = await res.json();
+        if(data.success){
+            alert('Administrador registrado correctamente!');
+            formRegistro.reset();
+            formRegistro.classList.add('hidden');
+            formLogin.classList.remove('hidden');
+        } else {
+            errorRegistro.textContent = data.message;
+            errorRegistro.classList.remove('hidden');
+        }
+    } catch(err){
+        errorRegistro.textContent = 'No se pudo conectar al servidor';
+        errorRegistro.classList.remove('hidden');
+    }
+});
+</script>
+
+</body>
+</html>

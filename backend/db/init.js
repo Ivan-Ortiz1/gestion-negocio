@@ -14,7 +14,8 @@ db.serialize(() => {
         nombre TEXT NOT NULL,
         descripcion TEXT,
         precio REAL NOT NULL,
-        stock INTEGER NOT NULL
+        stock INTEGER NOT NULL,
+        codigo_barras TEXT UNIQUE
     )`);
 
     // Tabla clientes

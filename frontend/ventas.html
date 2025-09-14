@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard - Gestión de Negocios</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="css/styles.css">
+<script src="js/main.js" defer></script>
+<script src="js/productos.js" defer></script>
+<script src="js/clientes.js" defer></script>
+<script src="js/ventas.js" defer></script>
+<script src="js/reportes.js" defer></script>
+</head>
+<body class="flex h-screen font-sans">
+
+<script>
+  // Verificar login
+  if(!localStorage.getItem('usuario')){
+      window.location.href = 'index.html';
+  }
+</script>
+
+<!-- Sidebar -->
+<aside id="sidebar" class="bg-gray-800 text-white w-64 p-4 hidden md:block transition-transform duration-300">
+  <h2 class="text-xl font-bold mb-6">Dashboard</h2>
+  <ul>
+    <li class="mb-3"><button data-section="ventas" class="hover:text-gray-300 w-full text-left">Ventas</button></li>
+    <li class="mb-3"><button data-section="productos" class="hover:text-gray-300 w-full text-left">Productos</button></li>
+    <li class="mb-3"><button data-section="clientes" class="hover:text-gray-300 w-full text-left">Clientes</button></li>
+    <li class="mb-3"><button data-section="reportes" class="hover:text-gray-300 w-full text-left">Reportes</button></li>
+    <li class="mb-3"><button id="btn-logout" class="hover:text-red-400 w-full text-left">Cerrar sesión</button></li>
+  </ul>
+</aside>
+
+<!-- Contenido principal -->
+<div class="flex-1 flex flex-col">
+  <!-- Header -->
+  <header class="bg-gray-100 p-4 flex items-center justify-between shadow">
+    <button id="btn-toggle-sidebar" class="md:hidden bg-gray-800 text-white px-2 py-1 rounded">☰</button>
+    <h1 class="text-xl font-bold">Gestión de Negocios</h1>
+  </header>
+
+  <!-- Main Content -->
+  <main class="p-6 overflow-auto flex-1">
+
+    <!-- Mensajes -->
+    <div id="mensaje" class="hidden"></div>
+
+    <!-- Ventas -->
+    <section id="ventas" class="section">
+      <h2 class="text-2xl font-bold mb-4">Registrar Venta</h2>
+      <form id="form-venta" class="bg-white p-4 shadow rounded mb-6">
+        <div class="mb-4">
+          <label class="block font-semibold mb-1">Cliente</label>
+          <select id="cliente" class="w-full border p-2 rounded">
+            <option value="">Desconocido</option>
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold mb-1">Código de barras</label>
+          <input type="text" id="codigoBarras" class="w-full border p-2 rounded" placeholder="Escanee o ingrese el código">
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold mb-1">Producto</label>
+          <select id="producto" class="w-full border p-2 rounded"></select>
+          <input type="number" id="cantidad" class="w-full border p-2 rounded mt-2" placeholder="Cantidad">
+          <button type="button" id="agregar-producto" class="bg-blue-500 text-white px-3 py-1 mt-2 rounded">Agregar Producto</button>
+        </div>
+        <table id="tabla-detalle" class="table-auto w-full mb-2 border-collapse border border-gray-300">
+          <thead>
+            <tr class="bg-gray-200">
+              <th class="border px-2 py-1">Producto</th>
+              <th class="border px-2 py-1">Cantidad</th>
+              <th class="border px-2 py-1">Precio</th>
+              <th class="border px-2 py-1">Subtotal</th>
+              <th class="border px-2 py-1">Acciones</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <p id="totalVenta" class="font-bold text-lg mb-4">Total: ₲0</p>
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Registrar Venta</button>
+      </form>
+      <h2 class="text-xl font-bold mb-2">Ventas Registradas</h2>
+      <table id="tabla-ventas" class="table-auto w-full border-collapse border border-gray-300">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="border px-2 py-1">ID</th>
+            <th class="border px-2 py-1">Cliente</th>
+            <th class="border px-2 py-1">Fecha</th>
+            <th class="border px-2 py-1">Producto</th>
+            <th class="border px-2 py-1">Cantidad</th>
+            <th class="border px-2 py-1">Precio</th>
+            <th class="border px-2 py-1">Total</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Productos -->
+    <section id="productos" class="section hidden">
+      <h2 class="text-2xl font-bold mb-4">Productos</h2>
+      <form id="form-producto" class="bg-white p-4 shadow rounded mb-6">
+        <input type="hidden" id="idProducto">
+        <div class="mb-4">
+          <label class="block font-semibold mb-1">Nombre</label>
+          <input type="text" id="nombreProducto" class="w-full border p-2 rounded">
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold mb-1">Descripción</label>
+          <input type="text" id="descripcionProducto" class="w-full border p-2 rounded">
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold mb-1">Precio</label>
+          <input type="number" id="precioProducto" class="w-full border p-2 rounded">
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold mb-1">Stock</label>
+          <input type="number" id="stockProducto" class="w-full border p-2 rounded">
+        </div>
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Guardar</button>
+      </form>
+      <table id="tabla-productos" class="table-auto w-full border-collapse border border-gray-300">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="border px-2 py-1">ID</th>
+            <th class="border px-2 py-1">Nombre</th>
+            <th class="border px-2 py-1">Descripción</th>
+            <th class="border px-2 py-1">Precio</th>
+            <th class="border px-2 py-1">Stock</th>
+            <th class="border px-2 py-1">Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Clientes -->
+    <section id="clientes" class="section hidden">
+      <h2 class="text-2xl font-bold mb-4">Clientes</h2>
+      <form id="form-cliente" class="bg-white p-4 shadow rounded mb-6">
+        <input type="hidden" id="idCliente">
+        <div class="mb-4">
+          <label class="block font-semibold mb-1">Nombre</label>
+          <input type="text" id="nombreCliente" class="w-full border p-2 rounded" value="Desconocido">
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold mb-1">Correo</label>
+          <input type="email" id="correoCliente" class="w-full border p-2 rounded">
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold mb-1">Teléfono</label>
+          <input type="text" id="telefonoCliente" class="w-full border p-2 rounded">
+        </div>
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Guardar</button>
+      </form>
+      <table id="tabla-clientes" class="table-auto w-full border-collapse border border-gray-300">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="border px-2 py-1">ID</th>
+            <th class="border px-2 py-1">Nombre</th>
+            <th class="border px-2 py-1">Correo</th>
+            <th class="border px-2 py-1">Teléfono</th>
+            <th class="border px-2 py-1">Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Reportes -->
+    <section id="reportes" class="section hidden">
+      <h2 class="text-2xl font-bold mb-4">Reportes</h2>
+      <canvas id="chart-ventas-dia" class="mb-6"></canvas>
+      <canvas id="chart-ventas-cliente" class="mb-6"></canvas>
+      <canvas id="chart-producto-mas-vendido" class="mb-6"></canvas>
+    </section>
+  </main>
+</div>
+
+<script>
+const btnLogout = document.getElementById('btn-logout');
+btnLogout.addEventListener('click', () => {
+    localStorage.removeItem('usuario');
+    window.location.href = 'index.html';
+});
+</script>
+
+</body>
+</html>
