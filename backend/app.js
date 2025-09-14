@@ -13,6 +13,9 @@ app.use('/productos', productosRoutes);
 const clientesRoutes = require('./routes/clientes');
 app.use('/clientes', clientesRoutes);
 
+const ventasRoutes = require('./routes/ventas');
+app.use('/ventas', ventasRoutes);
+
 
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));

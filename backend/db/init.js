@@ -24,6 +24,26 @@ db.serialize(() => {
         telefono TEXT
     )`);
 
+    // Tabla ventas
+    db.run(`CREATE TABLE IF NOT EXISTS ventas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        cliente_id INTEGER NOT NULL,
+        fecha TEXT NOT NULL,
+        total REAL DEFAULT 0,
+        FOREIGN KEY(cliente_id) REFERENCES clientes(id)
+    )`);
+
+    // Tabla detalle_ventas
+    db.run(`CREATE TABLE IF NOT EXISTS detalle_ventas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        venta_id INTEGER NOT NULL,
+        producto_id INTEGER NOT NULL,
+        cantidad INTEGER NOT NULL,
+        precio REAL NOT NULL,
+        FOREIGN KEY(venta_id) REFERENCES ventas(id),
+        FOREIGN KEY(producto_id) REFERENCES productos(id)
+    )`);
+
     console.log("Tablas creadas o ya existentes");
 });
 
