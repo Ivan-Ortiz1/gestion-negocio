@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Productos - KairoSoft</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/productos.js" defer></script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+</style>
+</head>
+<body class="flex h-screen bg-gray-100 text-gray-900">
+
+<script>
+  if(!sessionStorage.getItem('usuario')){
+      window.location.href = 'index.html';
+  }
+</script>
+
+<aside class="bg-gray-800 text-white w-64 p-4 hidden md:block">
+  <h2 class="text-xl font-bold mb-6">KairoSoft</h2>
+  <ul>
+    <li class="mb-3"><a href="ventas.html" class="hover:text-gray-300 w-full block">Ventas</a></li>
+    <li class="mb-3"><a href="productos.html" class="hover:text-gray-300 w-full block">Productos</a></li>
+    <li class="mb-3"><a href="clientes.html" class="hover:text-gray-300 w-full block">Clientes</a></li>
+    <li class="mb-3"><a href="reportes.html" class="hover:text-gray-300 w-full block">Reportes</a></li>
+    <li class="mb-3"><button id="btn-logout" class="hover:text-red-400 w-full text-left">Cerrar sesión</button></li>
+  </ul>
+</aside>
+
+<div class="flex-1 flex flex-col">
+  <header class="bg-gray-800 p-4 flex items-center justify-between shadow text-gray-100">
+    <h1 class="text-xl font-bold">KairoSoft - Productos</h1>
+  </header>
+
+  <main class="p-6 overflow-auto flex-1">
+    <section id="productos">
+      <h2 class="text-2xl font-bold mb-4 text-blue-400">Productos</h2>
+      <form id="form-producto" class="bg-gray-800 p-6 rounded-2xl shadow mb-6 border border-gray-700">
+        <input type="hidden" id="idProducto">
+        <div class="mb-4">
+          <label class="block font-semibold">Nombre</label>
+          <input type="text" id="nombreProducto" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded">
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold">Descripción</label>
+          <input type="text" id="descripcionProducto" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded">
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold">Precio</label>
+          <input type="number" id="precioProducto" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded" min="0">
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold">Stock</label>
+          <input type="number" id="stockProducto" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded" min="0">
+        </div>
+        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full transition font-semibold">Guardar</button>
+      </form>
+
+      <div class="overflow-auto rounded-2xl shadow border border-gray-700">
+        <table id="tabla-productos" class="min-w-full border-collapse border border-gray-600 text-gray-100">
+          <thead class="bg-gray-700 text-gray-200">
+            <tr>
+              <th class="border px-2 py-1">ID</th>
+              <th class="border px-2 py-1">Nombre</th>
+              <th class="border px-2 py-1">Descripción</th>
+              <th class="border px-2 py-1">Precio</th>
+              <th class="border px-2 py-1">Stock</th>
+              <th class="border px-2 py-1">Acción</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const btnLogout = document.getElementById('btn-logout');
+btnLogout.addEventListener('click', () => {
+    sessionStorage.removeItem('usuario');
+    window.location.href = 'index.html';
+});
+</script>
+</body>
+</html>

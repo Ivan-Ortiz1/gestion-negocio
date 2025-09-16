@@ -2,33 +2,81 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Clientes - Gestión de Negocios</title>
-<link href="css/styles.css" rel="stylesheet">
-<script src="js/clientes.js" defer></script>
+<title>Clientes - KairoSoft</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="js/clientes.js" defer></script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+</style>
 </head>
-<body class="p-6">
-<h1 class="text-2xl font-bold mb-4">Clientes</h1>
+<body class="flex h-screen bg-gray-100 text-gray-900">
 
-<form id="form-cliente" class="mb-4">
-  <input type="text" id="nombre" placeholder="Nombre" class="border p-1 mr-2" required>
-  <input type="email" id="correo" placeholder="Correo" class="border p-1 mr-2">
-  <input type="text" id="telefono" placeholder="Teléfono" class="border p-1 mr-2">
-  <button type="submit" class="bg-green-500 text-white px-2 py-1">Agregar Cliente</button>
-</form>
+<script>
+  if(!sessionStorage.getItem('usuario')){
+      window.location.href = 'index.html';
+  }
+</script>
 
-<table id="tabla-clientes" class="table-auto border-collapse border border-gray-300">
-<thead>
-<tr>
-<th class="border px-2 py-1">ID</th>
-<th class="border px-2 py-1">Nombre</th>
-<th class="border px-2 py-1">Correo</th>
-<th class="border px-2 py-1">Teléfono</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
+<aside class="bg-gray-800 text-white w-64 p-4 hidden md:block">
+  <h2 class="text-xl font-bold mb-6">KairoSoft</h2>
+  <ul>
+    <li class="mb-3"><a href="ventas.html" class="hover:text-gray-300 w-full block">Ventas</a></li>
+    <li class="mb-3"><a href="productos.html" class="hover:text-gray-300 w-full block">Productos</a></li>
+    <li class="mb-3"><a href="clientes.html" class="hover:text-gray-300 w-full block">Clientes</a></li>
+    <li class="mb-3"><a href="reportes.html" class="hover:text-gray-300 w-full block">Reportes</a></li>
+    <li class="mb-3"><button id="btn-logout" class="hover:text-red-400 w-full text-left">Cerrar sesión</button></li>
+  </ul>
+</aside>
 
-<a href="index.html" class="text-blue-500 mt-4 inline-block">Volver a Productos</a>
+<div class="flex-1 flex flex-col">
+  <header class="bg-gray-800 p-4 flex items-center justify-between shadow text-gray-100">
+    <h1 class="text-xl font-bold">KairoSoft - Clientes</h1>
+  </header>
+
+  <main class="p-6 overflow-auto flex-1">
+    <section id="clientes">
+      <h2 class="text-2xl font-bold mb-4 text-blue-400">Clientes</h2>
+      <form id="form-cliente" class="bg-gray-800 p-6 rounded-2xl shadow mb-6 border border-gray-700">
+        <input type="hidden" id="idCliente">
+        <div class="mb-4">
+          <label class="block font-semibold">Nombre</label>
+          <input type="text" id="nombreCliente" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded">
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold">Correo</label>
+          <input type="email" id="correoCliente" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded">
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold">Teléfono</label>
+          <input type="text" id="telefonoCliente" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded">
+        </div>
+        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full transition font-semibold">Guardar</button>
+      </form>
+
+      <div class="overflow-auto rounded-2xl shadow border border-gray-700">
+        <table id="tabla-clientes" class="min-w-full border-collapse border border-gray-600 text-gray-100">
+          <thead class="bg-gray-700 text-gray-200">
+            <tr>
+              <th class="border px-2 py-1">ID</th>
+              <th class="border px-2 py-1">Nombre</th>
+              <th class="border px-2 py-1">Correo</th>
+              <th class="border px-2 py-1">Teléfono</th>
+              <th class="border px-2 py-1">Acción</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const btnLogout = document.getElementById('btn-logout');
+btnLogout.addEventListener('click', () => {
+    sessionStorage.removeItem('usuario');
+    window.location.href = 'index.html';
+});
+</script>
 </body>
 </html>

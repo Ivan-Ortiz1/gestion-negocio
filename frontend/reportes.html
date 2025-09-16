@@ -1,82 +1,57 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Reportes - Gestión de Negocios</title>
-    <link href="css/styles.css" rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="js/reportes.js" defer></script>
-  </head>
-  <body class="p-6 bg-gray-100">
-    <h1 class="text-2xl font-bold mb-6">📊 Reportes</h1>
+<head>
+<meta charset="UTF-8">
+<title>Reportes - KairoSoft</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/reportes.js" defer></script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+</style>
+</head>
+<body class="flex h-screen bg-gray-100 text-gray-900">
 
-    <!-- Reporte: Ventas por Día -->
-    <section class="mb-8">
-      <h2 class="text-xl font-bold mb-2">Ventas por Día</h2>
-      <table
-        class="table-auto w-full bg-white shadow rounded mb-4 border border-gray-300"
-      >
-        <thead class="bg-gray-200">
-          <tr>
-            <th class="border px-4 py-2">Fecha</th>
-            <th class="border px-4 py-2">Total</th>
-          </tr>
-        </thead>
-        <tbody id="tabla-ventas-dia"></tbody>
-      </table>
-      <canvas id="chart-ventas-dia" class="bg-white p-4 rounded shadow"></canvas>
+<script>
+  if(!sessionStorage.getItem('usuario')){
+      window.location.href = 'index.html';
+  }
+</script>
+
+<aside class="bg-gray-800 text-white w-64 p-4 hidden md:block">
+  <h2 class="text-xl font-bold mb-6">KairoSoft</h2>
+  <ul>
+    <li class="mb-3"><a href="ventas.html" class="hover:text-gray-300 w-full block">Ventas</a></li>
+    <li class="mb-3"><a href="productos.html" class="hover:text-gray-300 w-full block">Productos</a></li>
+    <li class="mb-3"><a href="clientes.html" class="hover:text-gray-300 w-full block">Clientes</a></li>
+    <li class="mb-3"><a href="reportes.html" class="hover:text-gray-300 w-full block">Reportes</a></li>
+    <li class="mb-3"><button id="btn-logout" class="hover:text-red-400 w-full text-left">Cerrar sesión</button></li>
+  </ul>
+</aside>
+
+<div class="flex-1 flex flex-col">
+  <header class="bg-gray-800 p-4 flex items-center justify-between shadow text-gray-100">
+    <h1 class="text-xl font-bold">KairoSoft - Reportes</h1>
+  </header>
+
+  <main class="p-6 overflow-auto flex-1">
+    <section id="reportes">
+      <h2 class="text-2xl font-bold mb-4 text-blue-400">Reportes</h2>
+      <div class="bg-gray-800 p-6 rounded-2xl shadow border border-gray-700">
+        <canvas id="chart-ventas-dia" class="mb-6"></canvas>
+        <canvas id="chart-ventas-cliente" class="mb-6"></canvas>
+        <canvas id="chart-producto-mas-vendido" class="mb-6"></canvas>
+      </div>
     </section>
+  </main>
+</div>
 
-    <!-- Reporte: Ventas por Cliente -->
-    <section class="mb-8">
-      <h2 class="text-xl font-bold mb-2">Ventas por Cliente</h2>
-      <table
-        class="table-auto w-full bg-white shadow rounded mb-4 border border-gray-300"
-      >
-        <thead class="bg-gray-200">
-          <tr>
-            <th class="border px-4 py-2">Cliente</th>
-            <th class="border px-4 py-2">Total</th>
-          </tr>
-        </thead>
-        <tbody id="tabla-ventas-cliente"></tbody>
-      </table>
-      <canvas
-        id="chart-ventas-cliente"
-        class="bg-white p-4 rounded shadow"
-      ></canvas>
-    </section>
-
-    <!-- Reporte: Productos más Vendidos -->
-    <section class="mb-8">
-      <h2 class="text-xl font-bold mb-2">Productos Más Vendidos</h2>
-      <table
-        class="table-auto w-full bg-white shadow rounded mb-4 border border-gray-300"
-      >
-        <thead class="bg-gray-200">
-          <tr>
-            <th class="border px-4 py-2">Producto</th>
-            <th class="border px-4 py-2">Cantidad Vendida</th>
-          </tr>
-        </thead>
-        <tbody id="tabla-productos"></tbody>
-      </table>
-      <!-- Podemos agregar un gráfico de barras para productos más vendidos -->
-      <canvas
-        id="chart-productos"
-        class="bg-white p-4 rounded shadow"
-      ></canvas>
-    </section>
-
-    <!-- Navegación -->
-    <div class="mt-6">
-      <a href="index.html" class="text-blue-500 hover:underline mr-4"
-        >Volver a Productos</a
-      >
-      <a href="ventas.html" class="text-blue-500 hover:underline"
-        >Volver a Ventas</a
-      >
-    </div>
-  </body>
+<script>
+const btnLogout = document.getElementById('btn-logout');
+btnLogout.addEventListener('click', () => {
+    sessionStorage.removeItem('usuario');
+    window.location.href = 'index.html';
+});
+</script>
+</body>
 </html>

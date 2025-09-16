@@ -58,7 +58,7 @@ if(formLogin) {
         const contrasena = document.getElementById('contrasenaLogin').value;
 
         try {
-            const res = await fetch('http://localhost:3000/login', {
+            const res = await fetch('http://localhost:3000/api/admin/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ usuario, contrasena })
@@ -85,7 +85,7 @@ if(formRegistro) {
         const contrasena = document.getElementById('contrasenaRegistro').value;
 
         try {
-            const res = await fetch('http://localhost:3000/registrar-admin', {
+            const res = await fetch('http://localhost:3000/api/admin/registrar-admin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ usuario, contrasena })

@@ -68,7 +68,7 @@ function renderChart(canvasId, type, labels, values, label, colors = null) {
 
 async function cargarReportes() {
   // Ventas por día
-  const ventasDia = await fetchData("http://localhost:3000/reportes/ventas-dia");
+  const ventasDia = await fetchData("http://localhost:3000/api/reportes/ventas-dia");
   renderTableData("#tabla-ventas-dia tbody", ventasDia, (v) => `
     <td class="border px-2 py-1">${v.dia}</td>
     <td class="border px-2 py-1">${formatoGuarani(v.total_dia)}</td>
@@ -81,7 +81,7 @@ async function cargarReportes() {
   }
 
   // Ventas por cliente
-  const ventasCliente = await fetchData("http://localhost:3000/reportes/ventas-cliente");
+  const ventasCliente = await fetchData("http://localhost:3000/api/reportes/ventas-cliente");
   renderTableData("#tabla-ventas-cliente tbody", ventasCliente, (v) => `
     <td class="border px-2 py-1">${v.cliente}</td>
     <td class="border px-2 py-1">${formatoGuarani(v.total_cliente)}</td>
@@ -107,7 +107,7 @@ async function cargarReportes() {
   }
 
   // Productos más vendidos
-  const productos = await fetchData("http://localhost:3000/reportes/productos-mas-vendidos");
+  const productos = await fetchData("http://localhost:3000/api/reportes/productos-mas-vendidos");
   renderTableData("#tabla-productos tbody", productos, (p) => `
     <td class="border px-2 py-1">${p.producto}</td>
     <td class="border px-2 py-1">${formatoGuarani(p.total_vendido)}</td>

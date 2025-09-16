@@ -1,85 +1,51 @@
-const API_CLIENTES = "http://localhost:3000/clientes";
+import { mostrarMensaje } from "./utils.js";
 
-// Elementos HTML
-const tablaClientesBody = document.querySelector("#tabla-clientes tbody");
-const formCliente = document.getElementById("form-cliente");
+export let clientesCache = [];
 
-// Cargar clientes
-async function cargarClientes() {
-    const res = await fetch(API_CLIENTES);
-    const clientes = await res.json();
-    tablaClientesBody.innerHTML = "";
+export async function cargarClientes() {
+    try {
+        const res = await fetch('http://localhost:3000/api/clientes');
+        clientesCache = await res.json();
 
-    clientes.forEach(c => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td class="border px-2 py-1">${c.id}</td>
-            <td class="border px-2 py-1">${c.nombre}</td>
-            <td class="border px-2 py-1">${c.correo || ''}</td>
-            <td class="border px-2 py-1">${c.telefono || ''}</td>
-            <td class="border px-2 py-1">
-                <button class="bg-yellow-400 text-white px-2 py-1 rounded editar" data-id="${c.id}">Editar</button>
-                <button class="bg-red-500 text-white px-2 py-1 rounded eliminar" data-id="${c.id}">Eliminar</button>
-            </td>
-        `;
-        tablaClientesBody.appendChild(tr);
+        const clienteSelect = document.getElementById('cliente');
+        if (!clienteSelect) return;
+
+        clienteSelect.innerHTML = '<option value="">Desconocido</option>';
+        clientesCache.forEach(c => {
+            const option = document.createElement('option');
+            option.value = c.id;
+            option.textContent = c.nombre;
+            clienteSelect.appendChild(option);
+        });
+    } catch (error) {
+        mostrarMensaje("Error al cargar clientes", "error");
+        console.error(error);
+    }
+}
+
+export function setupAutocompleteClientes(inputId, selectId) {
+    const clienteInput = document.getElementById(inputId);
+    const clienteSuggestions = document.getElementById(`${inputId}Suggestions`);
+    clienteInput.addEventListener('input', () => {
+        const term = clienteInput.value.toLowerCase();
+        clienteSuggestions.innerHTML = '';
+        if (!term) return clienteSuggestions.classList.add('hidden');
+
+        const matches = clientesCache.filter(c => c.nombre.toLowerCase().includes(term));
+        matches.forEach(c => {
+            const li = document.createElement('li');
+            li.textContent = c.nombre;
+            li.className = 'p-1 cursor-pointer hover:bg-gray-200';
+            li.addEventListener('click', () => {
+                clienteInput.value = c.nombre;
+                document.getElementById(selectId).value = c.id;
+                clienteSuggestions.classList.add('hidden');
+            });
+            clienteSuggestions.appendChild(li);
+        });
+        clienteSuggestions.classList.toggle('hidden', matches.length === 0);
     });
-
-    agregarEventosClientes();
-}
-
-// Agregar eventos a botones
-function agregarEventosClientes() {
-    document.querySelectorAll(".editar").forEach(btn => {
-        btn.addEventListener("click", () => editarCliente(btn.dataset.id));
-    });
-    document.querySelectorAll(".eliminar").forEach(btn => {
-        btn.addEventListener("click", () => eliminarCliente(btn.dataset.id));
+    document.addEventListener('click', e => {
+        if (!clienteInput.contains(e.target)) clienteSuggestions.classList.add('hidden');
     });
 }
-
-// Crear o editar cliente
-async function guardarCliente(cliente) {
-    const metodo = cliente.id ? "PUT" : "POST";
-    const url = cliente.id ? `${API_CLIENTES}/${cliente.id}` : API_CLIENTES;
-
-    await fetch(url, {
-        method: metodo,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(cliente)
-    });
-
-    await cargarClientes();
-}
-
-// Eliminar cliente
-async function eliminarCliente(id) {
-    await fetch(`${API_CLIENTES}/${id}`, { method: "DELETE" });
-    await cargarClientes();
-}
-
-// Rellenar formulario para editar
-async function editarCliente(id) {
-    const res = await fetch(`${API_CLIENTES}/${id}`);
-    const c = await res.json();
-    document.getElementById("nombreCliente").value = c.nombre;
-    document.getElementById("correoCliente").value = c.correo || '';
-    document.getElementById("telefonoCliente").value = c.telefono || '';
-    document.getElementById("idCliente").value = c.id;
-}
-
-// Evento submit del formulario
-formCliente?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const cliente = {
-        id: document.getElementById("idCliente").value,
-        nombre: document.getElementById("nombreCliente").value,
-        correo: document.getElementById("correoCliente").value,
-        telefono: document.getElementById("telefonoCliente").value
-    };
-    await guardarCliente(cliente);
-    formCliente.reset();
-});
-
-// Inicialización
-document.addEventListener("DOMContentLoaded", cargarClientes);
