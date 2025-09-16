@@ -5,7 +5,6 @@
 <title>Reportes - KairoSoft</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="js/reportes.js" defer></script>
 <style>
   body { font-family: 'Inter', sans-serif; }
 </style>
@@ -46,12 +45,18 @@
   </main>
 </div>
 
-<script>
+<script type="module">
+import CONFIG from './js/config.js';
+import { initReportes } from './js/reportes.js';
+
 const btnLogout = document.getElementById('btn-logout');
 btnLogout.addEventListener('click', () => {
     sessionStorage.removeItem('usuario');
     window.location.href = 'index.html';
 });
+
+// Inicializar reportes con la URL de la API
+initReportes(CONFIG.API_BASE_URL);
 </script>
 </body>
 </html>

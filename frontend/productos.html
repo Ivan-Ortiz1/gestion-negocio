@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Productos - KairoSoft</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="js/productos.js" defer></script>
 <style>
   body { font-family: 'Inter', sans-serif; }
 </style>
@@ -76,12 +75,18 @@
   </main>
 </div>
 
-<script>
+<script type="module">
+import CONFIG from "./js/config.js";
+import { initProductos } from "./js/productos.js";
+
 const btnLogout = document.getElementById('btn-logout');
 btnLogout.addEventListener('click', () => {
     sessionStorage.removeItem('usuario');
     window.location.href = 'index.html';
 });
+
+// Inicializar funcionalidades de productos
+initProductos(CONFIG.API_BASE_URL);
 </script>
 </body>
 </html>

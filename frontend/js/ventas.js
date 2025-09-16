@@ -1,6 +1,7 @@
 import { mostrarMensaje, formatoGuarani } from "./utils.js";
 import { productosCache, cargarProductos, setupAutocompleteProductos, actualizarSelectProductos } from "./productos.js";
 import { clientesCache, cargarClientes, setupAutocompleteClientes } from "./clientes.js";
+import { API_URL } from "./config.js";
 
 let detalle = [];
 
@@ -59,15 +60,22 @@ export function renderDetalle(resaltarId = null) {
                 nuevaCantidad = 1;
                 e.target.value = 1;
             }
+
             const producto = productosCache.find(p => p.id === id);
-            const existing = detalle.find(d => d.producto_id === id);
-            const stockDisponible = producto.stock - (detalle.reduce((sum, d) => d.producto_id === id ? sum + d.cantidad : sum, 0) - nuevaCantidad);
+            const cantidadEnDetalle = detalle
+                .filter(d => d.producto_id === id)
+                .reduce((sum, d) => sum + d.cantidad, 0);
+
+            const stockDisponible = producto.stock - (cantidadEnDetalle - nuevaCantidad);
             if (nuevaCantidad > stockDisponible) {
                 mostrarMensaje(`Cantidad supera stock disponible: ${stockDisponible}`, "error");
                 nuevaCantidad = stockDisponible;
                 e.target.value = stockDisponible;
             }
+
+            const existing = detalle.find(d => d.producto_id === id);
             existing.cantidad = nuevaCantidad;
+
             renderDetalle();
             actualizarSelectProductos(detalle);
         });
@@ -83,6 +91,12 @@ export function renderDetalle(resaltarId = null) {
             mostrarMensaje("Producto eliminado del detalle", "success");
         });
     });
+}
+
+function limpiarDetalle() {
+    detalle = [];
+    renderDetalle();
+    actualizarSelectProductos(detalle);
 }
 
 export async function initVentas() {
@@ -122,13 +136,12 @@ export async function initVentas() {
         if (detalle.length === 0) return mostrarMensaje('Agrega al menos un producto', "error");
 
         try {
-            await fetch('http://localhost:3000/api/ventas', {
+            await fetch(`${API_URL}/ventas`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ cliente_id, productos: detalle })
             });
-            detalle = [];
-            renderDetalle();
+            limpiarDetalle();
             await cargarClientes();
             await cargarProductos();
             mostrarMensaje('Venta registrada con éxito', "success");

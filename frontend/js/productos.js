@@ -1,8 +1,9 @@
 import { mostrarMensaje, formatoGuarani } from "./utils.js";
+import CONFIG from "./config.js";
 
 export let productosCache = []; // Cache global de productos
 
-const API_PRODUCTOS = "http://localhost:3000/api/productos";
+const API_PRODUCTOS = `${CONFIG.API_BASE_URL}/productos`;
 
 // Tabla y formulario
 const tablaProductosBody = document.querySelector("#tabla-productos tbody");
@@ -18,7 +19,7 @@ export async function cargarProductos() {
         actualizarSelectProductos();
     } catch (error) {
         console.error(error);
-        mostrarMensaje("Error al cargar productos", "error");
+        mostrarMensaje("error", "Error al cargar productos");
     }
 }
 
@@ -66,13 +67,13 @@ export function agregarEventosProductos() {
             const stock = parseInt(tr.querySelector(".stock-edit").value);
 
             // Validaciones
-            if (!nombre) return mostrarMensaje("El nombre es obligatorio", "error");
-            if (isNaN(precio) || precio < 0) return mostrarMensaje("Precio inválido", "error");
-            if (isNaN(stock) || stock < 0) return mostrarMensaje("Stock inválido", "error");
+            if (!nombre) return mostrarMensaje("error", "El nombre es obligatorio");
+            if (isNaN(precio) || precio < 0) return mostrarMensaje("error", "Precio inválido");
+            if (isNaN(stock) || stock < 0) return mostrarMensaje("error", "Stock inválido");
 
             const producto = { id, nombre, descripcion, precio, stock };
             await guardarProducto(producto);
-            mostrarMensaje("Producto actualizado", "success");
+            mostrarMensaje("success", "Producto actualizado");
         });
     });
 
@@ -96,7 +97,7 @@ export async function guardarProducto(producto) {
         await cargarProductos();
     } catch (error) {
         console.error(error);
-        mostrarMensaje("Error al guardar producto", "error");
+        mostrarMensaje("error", "Error al guardar producto");
     }
 }
 
@@ -104,11 +105,11 @@ export async function guardarProducto(producto) {
 export async function eliminarProducto(id) {
     try {
         await fetch(`${API_PRODUCTOS}/${id}`, { method: "DELETE" });
-        mostrarMensaje("Producto eliminado", "success");
+        mostrarMensaje("success", "Producto eliminado");
         await cargarProductos();
     } catch (error) {
         console.error(error);
-        mostrarMensaje("Error al eliminar producto", "error");
+        mostrarMensaje("error", "Error al eliminar producto");
     }
 }
 
@@ -171,13 +172,13 @@ formProducto?.addEventListener("submit", async (e) => {
     const stock = parseInt(document.getElementById("stockProducto").value);
     const id = document.getElementById("idProducto").value || null;
 
-    if (!nombre) return mostrarMensaje("El nombre es obligatorio", "error");
-    if (isNaN(precio) || precio < 0) return mostrarMensaje("Precio inválido", "error");
-    if (isNaN(stock) || stock < 0) return mostrarMensaje("Stock inválido", "error");
+    if (!nombre) return mostrarMensaje("error", "El nombre es obligatorio");
+    if (isNaN(precio) || precio < 0) return mostrarMensaje("error", "Precio inválido");
+    if (isNaN(stock) || stock < 0) return mostrarMensaje("error", "Stock inválido");
 
     const producto = { id, nombre, descripcion, precio, stock };
     await guardarProducto(producto);
-    mostrarMensaje(id ? "Producto actualizado" : "Producto agregado", "success");
+    mostrarMensaje("success", id ? "Producto actualizado" : "Producto agregado");
     formProducto.reset();
 });
 

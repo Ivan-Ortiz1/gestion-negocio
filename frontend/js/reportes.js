@@ -1,3 +1,5 @@
+import { formatoGuarani } from "./utils.js";
+
 async function fetchData(url) {
   try {
     const res = await fetch(url);
@@ -7,11 +9,6 @@ async function fetchData(url) {
     console.error(`Error al obtener datos de ${url}:`, err);
     return null;
   }
-}
-
-// Función para formatear a guaraníes
-function formatoGuarani(valor) {
-  return valor.toLocaleString('es-PY', { style: 'currency', currency: 'PYG' });
 }
 
 function renderTableData(tbodySelector, data, formatter) {
@@ -44,9 +41,7 @@ function renderChart(canvasId, type, labels, values, label, colors = null) {
         {
           label,
           data: values,
-          backgroundColor:
-            colors ||
-            "rgba(75, 192, 192, 0.6)",
+          backgroundColor: colors || "rgba(75, 192, 192, 0.6)",
         },
       ],
     },
@@ -56,11 +51,11 @@ function renderChart(canvasId, type, labels, values, label, colors = null) {
         legend: { position: "top" },
         tooltip: {
           callbacks: {
-            label: function(context) {
+            label: function (context) {
               return formatoGuarani(context.raw);
-            }
-          }
-        }
+            },
+          },
+        },
       },
     },
   });
@@ -116,13 +111,7 @@ async function cargarReportes() {
   if (productos && productos.length > 0) {
     const labels = productos.map((p) => p.producto);
     const values = productos.map((p) => p.total_vendido);
-    renderChart(
-      "chart-productos",
-      "bar",
-      labels,
-      values,
-      "Productos más vendidos"
-    );
+    renderChart("chart-productos", "bar", labels, values, "Productos más vendidos");
   }
 }
 

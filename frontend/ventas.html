@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Ventas - KairoSoft</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="js/ventas.js" defer></script>
 <style>
   body { font-family: 'Inter', sans-serif; }
   .hidden { display: none; }
@@ -111,12 +110,18 @@
   </main>
 </div>
 
-<script>
+<script type="module">
+import CONFIG from './js/config.js';
+import { initVentas } from './js/ventas.js';
+
 const btnLogout = document.getElementById('btn-logout');
 btnLogout.addEventListener('click', () => {
     sessionStorage.removeItem('usuario');
     window.location.href = 'index.html';
 });
+
+// Inicializar ventas con la URL de la API
+initVentas(CONFIG.API_BASE_URL);
 </script>
 
 </body>

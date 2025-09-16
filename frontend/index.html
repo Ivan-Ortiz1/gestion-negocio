@@ -64,7 +64,9 @@
     </form>
 </div>
 
-<script>
+<script type="module">
+import CONFIG from "./js/config.js";
+
 const formLogin = document.getElementById('form-login');
 const formRegistro = document.getElementById('form-registro');
 const btnShowRegister = document.getElementById('btn-show-register');
@@ -98,14 +100,13 @@ formLogin.addEventListener('submit', async e => {
     }
 
     try {
-        const res = await fetch('http://localhost:3000/api/admin/login', {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/admin/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ usuario, contrasena })
         });
         const data = await res.json();
         if(data.success){
-            // Persistencia segura inicial: sessionStorage
             sessionStorage.setItem('usuario', data.usuario);
             window.location.href = 'ventas.html';
         } else {
@@ -131,7 +132,7 @@ formRegistro.addEventListener('submit', async e => {
     }
 
     try {
-        const res = await fetch('http://localhost:3000/api/admin/registrar-admin', {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/admin/registrar-admin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ usuario, contrasena })

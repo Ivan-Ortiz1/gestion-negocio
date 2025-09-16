@@ -1,10 +1,14 @@
+import CONFIG from "./config.js"; 
+
 // -------------------- Sidebar --------------------
 const sidebar = document.getElementById('sidebar');
 const btnToggle = document.getElementById('btn-toggle-sidebar');
 
-btnToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('-translate-x-full');
-});
+if (btnToggle && sidebar) {
+    btnToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+    });
+}
 
 // Navegación SPA
 document.querySelectorAll('#sidebar button[data-section]').forEach(btn => {
@@ -21,6 +25,7 @@ document.querySelectorAll('#sidebar button[data-section]').forEach(btn => {
 // -------------------- Mensajes centralizados --------------------
 function mostrarMensaje(tipo, texto, tiempo = 3000) {
     let div = document.getElementById('mensaje');
+    if (!div) return;
     div.textContent = texto;
     div.className = `mensaje ${tipo}`;
     div.style.display = 'block';
@@ -36,62 +41,62 @@ const errorLogin = document.getElementById('errorLogin');
 const errorRegistro = document.getElementById('errorRegistro');
 
 // Alternar formularios
-if(btnShowRegister && btnShowLogin) {
+if (btnShowRegister && btnShowLogin) {
     btnShowRegister.addEventListener('click', () => {
         formLogin.classList.add('hidden');
         formRegistro.classList.remove('hidden');
-        errorLogin.classList.add('hidden');
+        errorLogin?.classList.add('hidden');
     });
 
     btnShowLogin.addEventListener('click', () => {
         formRegistro.classList.add('hidden');
         formLogin.classList.remove('hidden');
-        errorRegistro.classList.add('hidden');
+        errorRegistro?.classList.add('hidden');
     });
 }
 
 // Login
-if(formLogin) {
+if (formLogin) {
     formLogin.addEventListener('submit', async e => {
         e.preventDefault();
         const usuario = document.getElementById('usuarioLogin').value;
         const contrasena = document.getElementById('contrasenaLogin').value;
 
         try {
-            const res = await fetch('http://localhost:3000/api/admin/login', {
+            const res = await fetch(`${CONFIG.API_BASE_URL}/admin/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ usuario, contrasena })
             });
             const data = await res.json();
-            if(data.success){
+            if (data.success) {
                 sessionStorage.setItem('usuario', data.usuario);
                 mostrarMensaje('success', 'Login exitoso! Redirigiendo...');
                 setTimeout(() => window.location.href = 'ventas.html', 1000);
             } else {
                 mostrarMensaje('error', data.message);
             }
-        } catch(err){
+        } catch (err) {
             mostrarMensaje('error', 'No se pudo conectar al servidor');
         }
     });
 }
 
 // Registro
-if(formRegistro) {
+if (formRegistro) {
     formRegistro.addEventListener('submit', async e => {
         e.preventDefault();
         const usuario = document.getElementById('usuarioRegistro').value;
         const contrasena = document.getElementById('contrasenaRegistro').value;
 
         try {
-            const res = await fetch('http://localhost:3000/api/admin/registrar-admin', {
+            const res = await fetch(`${CONFIG.API_BASE_URL}/admin/registrar-admin`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ usuario, contrasena })
             });
             const data = await res.json();
-            if(data.success){
+            if (data.success) {
                 formRegistro.reset();
                 formRegistro.classList.add('hidden');
                 formLogin.classList.remove('hidden');
@@ -99,7 +104,7 @@ if(formRegistro) {
             } else {
                 mostrarMensaje('error', data.message);
             }
-        } catch(err){
+        } catch (err) {
             mostrarMensaje('error', 'No se pudo conectar al servidor');
         }
     });
@@ -107,7 +112,7 @@ if(formRegistro) {
 
 // -------------------- Logout --------------------
 const btnLogout = document.getElementById('btn-logout');
-if(btnLogout){
+if (btnLogout) {
     btnLogout.addEventListener('click', () => {
         sessionStorage.removeItem('usuario');
         mostrarMensaje('info', 'Cerrando sesión...');

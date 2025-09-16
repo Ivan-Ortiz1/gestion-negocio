@@ -1,4 +1,31 @@
+# === Node.js ===
 node_modules/
-frontend/css/styles.css
-.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# === SQLite Database ===
 backend/db/database.sqlite
+
+# === Env Files ===
+.env
+*.env
+
+# === Tailwind / CSS Builds ===
+# El CSS generado por Tailwind (no es necesario versionarlo)
+frontend/css/styles.css
+frontend/dist/
+frontend/build/
+
+# === Logs ===
+*.log
+logs/
+backend/logs/
+frontend/logs/
+
+# === Editor / SO ===
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
