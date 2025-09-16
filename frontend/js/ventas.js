@@ -7,6 +7,20 @@ function formatoGuarani(valor) {
     return valor.toLocaleString('es-PY', { style: 'currency', currency: 'PYG' });
 }
 
+// Mensajes tipo toast centralizado
+let mensajeTimeout;
+function mostrarMensaje(texto, tipo) {
+    const mensajeDiv = document.getElementById("mensaje");
+    if (!mensajeDiv) return;
+
+    mensajeDiv.textContent = texto;
+    mensajeDiv.className = tipo;
+    mensajeDiv.style.display = "block";
+
+    clearTimeout(mensajeTimeout);
+    mensajeTimeout = setTimeout(() => { mensajeDiv.style.display = "none"; }, 3000);
+}
+
 // Cargar clientes y productos
 async function cargarSelects() {
     try {
@@ -84,8 +98,9 @@ productoInput.addEventListener('input', () => {
         p.nombre.toLowerCase().includes(term) || (p.codigo_barras && p.codigo_barras.includes(term))
     );
     matches.forEach(p => {
+        const stockDisponible = p.stock - (detalle.find(d => d.producto_id === p.id)?.cantidad || 0);
         const li = document.createElement('li');
-        li.textContent = `${p.nombre} (Stock: ${p.stock}) - ${formatoGuarani(p.precio)}`;
+        li.textContent = `${p.nombre} (Stock: ${stockDisponible}) - ${formatoGuarani(p.precio)}`;
         li.className = 'p-1 cursor-pointer hover:bg-gray-200';
         li.addEventListener('click', () => {
             productoInput.value = p.nombre;
@@ -100,7 +115,7 @@ document.addEventListener('click', e => {
     if (!productoInput.contains(e.target)) productoSuggestions.classList.add('hidden');
 });
 
-// Agregar producto al detalle
+// Agregar producto al detalle con validación avanzada
 function agregarProducto(productoId, cantidad = 1) {
     if (!productoId) return mostrarMensaje('Producto inválido', "error");
     if (cantidad <= 0 || isNaN(cantidad)) return mostrarMensaje('Cantidad debe ser mayor a 0', "error");
@@ -115,12 +130,12 @@ function agregarProducto(productoId, cantidad = 1) {
     if (existing) existing.cantidad += cantidad;
     else detalle.push({ producto_id: productoId, cantidad, nombre: producto.nombre, precio: producto.precio });
 
-    renderDetalle(productoId); // resaltar el agregado
+    renderDetalle(productoId); 
     actualizarSelectProductos();
     mostrarMensaje("Producto agregado al detalle", "success");
 }
 
-// Validación de cantidad
+// Validación de cantidad en input
 document.getElementById('cantidad').addEventListener('input', e => {
     const productoId = parseInt(document.getElementById('producto').value);
     const cantidad = parseInt(e.target.value);
@@ -144,7 +159,7 @@ document.getElementById('agregar-producto').addEventListener('click', () => {
     const productoId = parseInt(document.getElementById('producto').value);
     const cantidad = parseInt(document.getElementById('cantidad').value);
     agregarProducto(productoId, cantidad);
-    document.getElementById('cantidad').value = '';
+    document.getElementById('cantidad').value = 1;
     productoInput.value = '';
 });
 
@@ -199,7 +214,7 @@ function renderDetalle(resaltarId = null) {
             }
             const producto = productosCache.find(p => p.id === id);
             const existing = detalle.find(d => d.producto_id === id);
-            const stockDisponible = producto.stock - (existing.cantidad - nuevaCantidad);
+            const stockDisponible = producto.stock - (detalle.reduce((sum, d) => d.producto_id === id ? sum + d.cantidad : sum, 0) - nuevaCantidad);
             if (nuevaCantidad > stockDisponible) {
                 mostrarMensaje(`Cantidad supera stock disponible: ${stockDisponible}`, "error");
                 nuevaCantidad = stockDisponible;
@@ -248,83 +263,15 @@ document.getElementById('form-venta').addEventListener('submit', async e => {
     }
 });
 
-// Cargar ventas registradas
-async function cargarVentas() {
-    try {
-        const res = await fetch('http://localhost:3000/api/ventas');
-        const ventas = await res.json();
-        const tbody = document.querySelector('#tabla-ventas tbody');
-        tbody.innerHTML = '';
-        ventas.forEach(v => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="border px-2 py-1">${v.venta_id}</td>
-                <td class="border px-2 py-1">${v.cliente_nombre}</td>
-                <td class="border px-2 py-1">${v.fecha}</td>
-                <td class="border px-2 py-1">${v.producto_nombre || ''}</td>
-                <td class="border px-2 py-1">${v.cantidad || ''}</td>
-                <td class="border px-2 py-1">${v.precio ? formatoGuarani(v.precio) : ''}</td>
-                <td class="border px-2 py-1 font-bold">${v.total ? formatoGuarani(v.total) : formatoGuarani(0)}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    } catch (error) {
-        mostrarMensaje('Error al cargar ventas', "error");
-        console.error(error);
-    }
-}
-
-// Mensajes tipo toast
-function mostrarMensaje(texto, tipo) {
-    const mensajeDiv = document.getElementById("mensaje");
-    if (!mensajeDiv) return;
-
-    mensajeDiv.textContent = texto;
-    mensajeDiv.className = tipo === "success" 
-        ? "bg-green-500 text-white p-2 rounded my-2 transition"
-        : "bg-red-500 text-white p-2 rounded my-2 transition";
-
-    mensajeDiv.style.display = "block";
-    setTimeout(() => { mensajeDiv.style.display = "none"; }, 3000);
-}
-
-// Navegación rápida y atajos
-document.addEventListener("DOMContentLoaded", () => {
-    const codigoBarrasInput = document.getElementById("codigoBarras");
-    const productoInputField = document.getElementById("productoInput");
-    const cantidadInput = document.getElementById("cantidad");
-    const formVenta = document.getElementById("form-venta");
-    const finalizarBtn = document.getElementById("finalizarVenta");
-
-    // Atajos
-    document.addEventListener("keydown", (e) => {
-        if (e.ctrlKey && e.key === "f") { e.preventDefault(); productoInputField.focus(); }
-        if (e.ctrlKey && e.key === "b") { e.preventDefault(); codigoBarrasInput.focus(); }
-        if (e.ctrlKey && e.key === "Enter") { e.preventDefault(); finalizarVenta(); }
-    });
-
-    // Enter para navegar
-    [codigoBarrasInput, productoInputField, cantidadInput].forEach((input, idx, arr) => {
-        input.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                if (idx < arr.length - 1) arr[idx + 1].focus();
-                else document.getElementById("agregar-producto").click();
-            }
-        });
-    });
-
-    // Finalizar venta
-    function finalizarVenta() {
-        if (detalle.length === 0) return mostrarMensaje("No hay productos en la venta", "error");
-        formVenta.requestSubmit();
-    }
-
-    finalizarBtn?.addEventListener("click", finalizarVenta);
-});
-
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
     cargarSelects();
     cargarVentas();
+
+    // Finalizar venta
+    const finalizarBtn = document.getElementById("finalizarVenta");
+    finalizarBtn?.addEventListener("click", () => {
+        if (detalle.length === 0) return mostrarMensaje("No hay productos en la venta", "error");
+        document.getElementById("form-venta").requestSubmit();
+    });
 });

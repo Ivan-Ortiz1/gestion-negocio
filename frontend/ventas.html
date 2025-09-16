@@ -5,33 +5,33 @@
 <title>Dashboard - KairoSoft</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link rel="stylesheet" href="css/styles.css">
-<script src="js/main.js" defer></script>
+<script src="js/ventas.js" defer></script>
 <script src="js/productos.js" defer></script>
 <script src="js/clientes.js" defer></script>
-<script src="js/ventas.js" defer></script>
 <script src="js/reportes.js" defer></script>
 <style>
-    body { font-family: 'Inter', sans-serif; }
-    .mensaje {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 12px 20px;
-        border-radius: 8px;
-        font-weight: 600;
-        z-index: 50;
-        display: none;
-    }
-    .mensaje.success { background-color: #16a34a; color: white; }
-    .mensaje.error { background-color: #dc2626; color: white; }
-    .mensaje.info { background-color: #2563eb; color: white; }
+  body { font-family: 'Inter', sans-serif; }
+  .hidden { display: none; }
+  #mensaje {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      padding: 0.5rem 1rem;
+      border-radius: 0.25rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: none;
+  }
+  #mensaje.success { background-color: #22c55e; color: white; }
+  #mensaje.error { background-color: #ef4444; color: white; }
+  #mensaje.info { background-color: #3b82f6; color: white; }
 </style>
 </head>
-<body class="flex h-screen font-sans bg-gray-900 text-gray-100">
+<body class="flex h-screen bg-gray-100 text-gray-900">
 
 <script>
-  // Verificar login con sessionStorage
+  // Verificar login
   if(!sessionStorage.getItem('usuario')){
       window.location.href = 'index.html';
   }
@@ -39,7 +39,7 @@
 
 <!-- Sidebar -->
 <aside id="sidebar" class="bg-gray-800 text-white w-64 p-4 hidden md:block transition-transform duration-300 transform -translate-x-0">
-  <h2 class="text-xl font-bold mb-6">Dashboard</h2>
+  <h2 class="text-xl font-bold mb-6">KairoSoft</h2>
   <ul>
     <li class="mb-3"><button data-section="ventas" class="hover:text-gray-300 w-full text-left">Ventas</button></li>
     <li class="mb-3"><button data-section="productos" class="hover:text-gray-300 w-full text-left">Productos</button></li>
@@ -51,117 +51,102 @@
 
 <!-- Contenido principal -->
 <div class="flex-1 flex flex-col">
-  <!-- Header -->
   <header class="bg-gray-800 p-4 flex items-center justify-between shadow text-gray-100">
     <button id="btn-toggle-sidebar" class="md:hidden bg-gray-700 text-white px-2 py-1 rounded">☰</button>
     <h1 class="text-xl font-bold">KairoSoft - Gestión de Negocios</h1>
   </header>
 
-  <!-- Main Content -->
   <main class="p-6 overflow-auto flex-1">
-
     <!-- Mensajes -->
-    <div id="mensaje" class="mensaje"></div>
+    <div id="mensaje"></div>
 
     <!-- Ventas -->
     <section id="ventas" class="section">
       <h2 class="text-2xl font-bold mb-4 text-blue-400">Registrar Venta</h2>
-      <form id="form-venta" class="bg-gray-800 p-6 shadow rounded mb-6 border border-gray-700">
-        
-        <!-- Cliente con autocompletado -->
-        <div class="mb-4 relative">
-          <label class="block font-semibold mb-1">Cliente</label>
-          <input type="text" id="clienteInput" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded focus:border-blue-500 focus:ring-2 focus:ring-blue-400 outline-none transition" placeholder="Escriba el nombre del cliente">
-          <ul id="clienteSuggestions" class="absolute bg-gray-700 border border-gray-600 w-full mt-1 rounded z-10 hidden text-gray-100 max-h-40 overflow-auto"></ul>
-          <select id="cliente" class="hidden">
-            <option value="">Desconocido</option>
-          </select>
+      <form id="form-venta" class="bg-white p-6 rounded shadow mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <!-- Cliente -->
+          <div class="relative">
+            <label class="block font-semibold mb-1">Cliente</label>
+            <input type="text" id="clienteInput" class="w-full border p-2 rounded" placeholder="Buscar cliente...">
+            <ul id="clienteSuggestions" class="absolute w-full bg-white border rounded shadow z-10 hidden max-h-40 overflow-auto"></ul>
+            <select id="cliente" class="hidden"></select>
+          </div>
+
+          <!-- Producto -->
+          <div class="relative">
+            <label class="block font-semibold mb-1">Producto</label>
+            <input type="text" id="productoInput" class="w-full border p-2 rounded" placeholder="Buscar producto...">
+            <ul id="productoSuggestions" class="absolute w-full bg-white border rounded shadow z-10 hidden max-h-40 overflow-auto"></ul>
+            <select id="producto" class="hidden"></select>
+          </div>
+
+          <!-- Cantidad -->
+          <div>
+            <label class="block font-semibold">Cantidad</label>
+            <input type="number" id="cantidad" min="1" class="w-full border p-2 rounded" value="1">
+          </div>
+
+          <!-- Código de barras -->
+          <div>
+            <label class="block font-semibold">Código de Barras</label>
+            <input type="text" id="codigoBarras" class="w-full border p-2 rounded" placeholder="Escanear o ingresar código">
+          </div>
         </div>
 
-        <!-- Código de barras -->
-        <div class="mb-4">
-          <label class="block font-semibold mb-1">Código de barras</label>
-          <input type="text" id="codigoBarras" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded focus:border-blue-500 focus:ring-2 focus:ring-blue-400 outline-none transition" placeholder="Escanee o ingrese el código" autofocus>
-        </div>
-
-        <!-- Producto con autocompletado -->
-        <div class="mb-4 relative">
-          <label class="block font-semibold mb-1">Producto</label>
-          <input type="text" id="productoInput" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded focus:border-blue-500 focus:ring-2 focus:ring-blue-400 outline-none transition" placeholder="Escriba el nombre o código de barras">
-          <ul id="productoSuggestions" class="absolute bg-gray-700 border border-gray-600 w-full mt-1 rounded z-10 hidden text-gray-100 max-h-40 overflow-auto"></ul>
-          <input type="number" id="cantidad" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded mt-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 outline-none transition" placeholder="Cantidad" value="1" min="1">
-          <button type="button" id="agregar-producto" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 mt-2 rounded transition">Agregar Producto</button>
-          <select id="producto" class="hidden"></select>
-        </div>
-
-        <!-- Detalle de venta -->
-        <table id="tabla-detalle" class="table-auto w-full mb-2 border-collapse border border-gray-600 text-gray-100">
-          <thead>
-            <tr class="bg-gray-700 text-gray-100">
-              <th class="border px-2 py-1">Producto</th>
-              <th class="border px-2 py-1">Cantidad</th>
-              <th class="border px-2 py-1">Precio</th>
-              <th class="border px-2 py-1">Subtotal</th>
-              <th class="border px-2 py-1">Acciones</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-        <p id="totalVenta" class="font-bold text-lg mb-4">Total: ₲0</p>
-        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition">Registrar Venta</button>
-        <button type="button" id="finalizarVenta" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded ml-2 transition">Finalizar Venta (Ctrl+Enter)</button>
+        <button type="button" id="agregar-producto" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50 mb-4">Agregar Producto</button>
       </form>
 
-      <!-- Ventas registradas -->
-      <h2 class="text-xl font-bold mb-2 text-blue-400">Ventas Registradas</h2>
-      <table id="tabla-ventas" class="table-auto w-full border-collapse border border-gray-600 text-gray-100">
-        <thead>
-          <tr class="bg-gray-700 text-gray-100">
-            <th class="border px-2 py-1">ID</th>
-            <th class="border px-2 py-1">Cliente</th>
-            <th class="border px-2 py-1">Fecha</th>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Precio</th>
-            <th>Total</th>
+      <!-- Tabla detalle de venta -->
+      <h2 class="text-xl font-semibold mb-2">Detalle de Venta</h2>
+      <table id="tabla-detalle" class="min-w-full border-collapse border border-gray-300 mb-4">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border px-2 py-1">Producto</th>
+            <th class="border px-2 py-1">Cantidad</th>
+            <th class="border px-2 py-1">Precio</th>
+            <th class="border px-2 py-1">Subtotal</th>
+            <th class="border px-2 py-1">Acción</th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
+      <div id="totalVenta" class="font-bold text-lg mb-6">Total: ₲0</div>
+      <button type="button" id="finalizarVenta" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Finalizar Venta</button>
     </section>
 
     <!-- Productos -->
     <section id="productos" class="section hidden">
-      <h2 class="text-2xl font-bold mb-4">Productos</h2>
-      <form id="form-producto" class="bg-white p-4 shadow rounded mb-6">
+      <h2 class="text-2xl font-bold mb-4 text-blue-400">Productos</h2>
+      <form id="form-producto" class="bg-white p-6 rounded shadow mb-6">
         <input type="hidden" id="idProducto">
         <div class="mb-4">
-          <label class="block font-semibold mb-1">Nombre</label>
+          <label class="block font-semibold">Nombre</label>
           <input type="text" id="nombreProducto" class="w-full border p-2 rounded">
         </div>
         <div class="mb-4">
-          <label class="block font-semibold mb-1">Descripción</label>
+          <label class="block font-semibold">Descripción</label>
           <input type="text" id="descripcionProducto" class="w-full border p-2 rounded">
         </div>
         <div class="mb-4">
-          <label class="block font-semibold mb-1">Precio</label>
-          <input type="number" id="precioProducto" class="w-full border p-2 rounded">
+          <label class="block font-semibold">Precio</label>
+          <input type="number" id="precioProducto" class="w-full border p-2 rounded" min="0">
         </div>
         <div class="mb-4">
-          <label class="block font-semibold mb-1">Stock</label>
-          <input type="number" id="stockProducto" class="w-full border p-2 rounded">
+          <label class="block font-semibold">Stock</label>
+          <input type="number" id="stockProducto" class="w-full border p-2 rounded" min="0">
         </div>
-        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Guardar</button>
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Guardar</button>
       </form>
-      <table id="tabla-productos" class="table-auto w-full border-collapse border border-gray-300">
-        <thead>
-          <tr class="bg-gray-200">
+      <table id="tabla-productos" class="min-w-full border-collapse border border-gray-300">
+        <thead class="bg-gray-200">
+          <tr>
             <th class="border px-2 py-1">ID</th>
             <th class="border px-2 py-1">Nombre</th>
             <th class="border px-2 py-1">Descripción</th>
             <th class="border px-2 py-1">Precio</th>
             <th class="border px-2 py-1">Stock</th>
-            <th class="border px-2 py-1">Acciones</th>
+            <th class="border px-2 py-1">Acción</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -170,31 +155,31 @@
 
     <!-- Clientes -->
     <section id="clientes" class="section hidden">
-      <h2 class="text-2xl font-bold mb-4">Clientes</h2>
-      <form id="form-cliente" class="bg-white p-4 shadow rounded mb-6">
+      <h2 class="text-2xl font-bold mb-4 text-blue-400">Clientes</h2>
+      <form id="form-cliente" class="bg-white p-6 rounded shadow mb-6">
         <input type="hidden" id="idCliente">
         <div class="mb-4">
-          <label class="block font-semibold mb-1">Nombre</label>
-          <input type="text" id="nombreCliente" class="w-full border p-2 rounded" value="Desconocido">
+          <label class="block font-semibold">Nombre</label>
+          <input type="text" id="nombreCliente" class="w-full border p-2 rounded">
         </div>
         <div class="mb-4">
-          <label class="block font-semibold mb-1">Correo</label>
+          <label class="block font-semibold">Correo</label>
           <input type="email" id="correoCliente" class="w-full border p-2 rounded">
         </div>
         <div class="mb-4">
-          <label class="block font-semibold mb-1">Teléfono</label>
+          <label class="block font-semibold">Teléfono</label>
           <input type="text" id="telefonoCliente" class="w-full border p-2 rounded">
         </div>
-        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Guardar</button>
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Guardar</button>
       </form>
-      <table id="tabla-clientes" class="table-auto w-full border-collapse border border-gray-300">
-        <thead>
-          <tr class="bg-gray-200">
+      <table id="tabla-clientes" class="min-w-full border-collapse border border-gray-300">
+        <thead class="bg-gray-200">
+          <tr>
             <th class="border px-2 py-1">ID</th>
             <th class="border px-2 py-1">Nombre</th>
             <th class="border px-2 py-1">Correo</th>
             <th class="border px-2 py-1">Teléfono</th>
-            <th class="border px-2 py-1">Acciones</th>
+            <th class="border px-2 py-1">Acción</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -203,11 +188,12 @@
 
     <!-- Reportes -->
     <section id="reportes" class="section hidden">
-      <h2 class="text-2xl font-bold mb-4">Reportes</h2>
+      <h2 class="text-2xl font-bold mb-4 text-blue-400">Reportes</h2>
       <canvas id="chart-ventas-dia" class="mb-6"></canvas>
       <canvas id="chart-ventas-cliente" class="mb-6"></canvas>
       <canvas id="chart-producto-mas-vendido" class="mb-6"></canvas>
     </section>
+
   </main>
 </div>
 
@@ -223,6 +209,15 @@ const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
 const sidebar = document.getElementById('sidebar');
 btnToggleSidebar.addEventListener('click', () => {
     sidebar.classList.toggle('-translate-x-full');
+});
+
+// Cambiar secciones
+document.querySelectorAll('#sidebar button[data-section]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('section.section').forEach(sec => sec.classList.add('hidden'));
+        const target = document.getElementById(btn.dataset.section);
+        target.classList.remove('hidden');
+    });
 });
 </script>
 
