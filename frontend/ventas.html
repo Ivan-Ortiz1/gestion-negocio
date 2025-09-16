@@ -72,7 +72,7 @@
         <div class="mb-4 relative">
           <label class="block font-semibold mb-1">Cliente</label>
           <input type="text" id="clienteInput" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded focus:border-blue-500 focus:ring-2 focus:ring-blue-400 outline-none transition" placeholder="Escriba el nombre del cliente">
-          <ul id="clienteSuggestions" class="absolute bg-gray-700 border border-gray-600 w-full mt-1 rounded z-10 hidden text-gray-100"></ul>
+          <ul id="clienteSuggestions" class="absolute bg-gray-700 border border-gray-600 w-full mt-1 rounded z-10 hidden text-gray-100 max-h-40 overflow-auto"></ul>
           <select id="cliente" class="hidden">
             <option value="">Desconocido</option>
           </select>
@@ -88,7 +88,7 @@
         <div class="mb-4 relative">
           <label class="block font-semibold mb-1">Producto</label>
           <input type="text" id="productoInput" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded focus:border-blue-500 focus:ring-2 focus:ring-blue-400 outline-none transition" placeholder="Escriba el nombre o código de barras">
-          <ul id="productoSuggestions" class="absolute bg-gray-700 border border-gray-600 w-full mt-1 rounded z-10 hidden text-gray-100"></ul>
+          <ul id="productoSuggestions" class="absolute bg-gray-700 border border-gray-600 w-full mt-1 rounded z-10 hidden text-gray-100 max-h-40 overflow-auto"></ul>
           <input type="number" id="cantidad" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded mt-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 outline-none transition" placeholder="Cantidad" value="1" min="1">
           <button type="button" id="agregar-producto" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 mt-2 rounded transition">Agregar Producto</button>
           <select id="producto" class="hidden"></select>
@@ -120,10 +120,10 @@
             <th class="border px-2 py-1">ID</th>
             <th class="border px-2 py-1">Cliente</th>
             <th class="border px-2 py-1">Fecha</th>
-            <th class="border px-2 py-1">Producto</th>
-            <th class="border px-2 py-1">Cantidad</th>
-            <th class="border px-2 py-1">Precio</th>
-            <th class="border px-2 py-1">Total</th>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Total</th>
           </tr>
         </thead>
         <tbody></tbody>

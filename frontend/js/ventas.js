@@ -2,7 +2,7 @@ let detalle = []; // Productos agregados a la venta
 let productosCache = []; // Guardar productos para fácil acceso
 let clientesCache = [];  // Guardar clientes para autocompletado
 
-// Función para formatear valores a guaraníes
+// Formato guaraní
 function formatoGuarani(valor) {
     return valor.toLocaleString('es-PY', { style: 'currency', currency: 'PYG' });
 }
@@ -52,10 +52,8 @@ const clienteSuggestions = document.getElementById('clienteSuggestions');
 clienteInput.addEventListener('input', () => {
     const term = clienteInput.value.toLowerCase();
     clienteSuggestions.innerHTML = '';
-    if (!term) {
-        clienteSuggestions.classList.add('hidden');
-        return;
-    }
+    if (!term) return clienteSuggestions.classList.add('hidden');
+
     const matches = clientesCache.filter(c => c.nombre.toLowerCase().includes(term));
     matches.forEach(c => {
         const li = document.createElement('li');
@@ -80,10 +78,8 @@ const productoSuggestions = document.getElementById('productoSuggestions');
 productoInput.addEventListener('input', () => {
     const term = productoInput.value.toLowerCase();
     productoSuggestions.innerHTML = '';
-    if (!term) {
-        productoSuggestions.classList.add('hidden');
-        return;
-    }
+    if (!term) return productoSuggestions.classList.add('hidden');
+
     const matches = productosCache.filter(p => 
         p.nombre.toLowerCase().includes(term) || (p.codigo_barras && p.codigo_barras.includes(term))
     );
@@ -114,18 +110,17 @@ function agregarProducto(productoId, cantidad = 1) {
 
     const existing = detalle.find(p => p.producto_id === productoId);
     const stockDisponible = producto.stock - (existing?.cantidad || 0);
-
     if (cantidad > stockDisponible) return mostrarMensaje(`Stock insuficiente. Disponible: ${stockDisponible}`, "error");
 
     if (existing) existing.cantidad += cantidad;
     else detalle.push({ producto_id: productoId, cantidad, nombre: producto.nombre, precio: producto.precio });
 
-    renderDetalle();
+    renderDetalle(productoId); // resaltar el agregado
     actualizarSelectProductos();
     mostrarMensaje("Producto agregado al detalle", "success");
 }
 
-// Validación de cantidad en tiempo real
+// Validación de cantidad
 document.getElementById('cantidad').addEventListener('input', e => {
     const productoId = parseInt(document.getElementById('producto').value);
     const cantidad = parseInt(e.target.value);
@@ -135,6 +130,7 @@ document.getElementById('cantidad').addEventListener('input', e => {
         btnAgregar.disabled = true;
         return;
     }
+
     const producto = productosCache.find(p => p.id === productoId);
     const existing = detalle.find(d => d.producto_id === productoId);
     const stockDisponible = producto.stock - (existing?.cantidad || 0);
@@ -143,7 +139,7 @@ document.getElementById('cantidad').addEventListener('input', e => {
     if (cantidad > stockDisponible) mostrarMensaje(`Cantidad supera el stock disponible: ${stockDisponible}`, "error");
 });
 
-// Botón para agregar producto desde select/input
+// Botón agregar
 document.getElementById('agregar-producto').addEventListener('click', () => {
     const productoId = parseInt(document.getElementById('producto').value);
     const cantidad = parseInt(document.getElementById('cantidad').value);
@@ -152,7 +148,7 @@ document.getElementById('agregar-producto').addEventListener('click', () => {
     productoInput.value = '';
 });
 
-// Escaneo de código de barras
+// Escaneo código de barras
 document.getElementById('codigoBarras').addEventListener('keypress', e => {
     if (e.key === 'Enter') {
         e.preventDefault();
@@ -165,8 +161,8 @@ document.getElementById('codigoBarras').addEventListener('keypress', e => {
     }
 });
 
-// Renderizar detalle en la tabla
-function renderDetalle() {
+// Renderizar detalle
+function renderDetalle(resaltarId = null) {
     const tbody = document.querySelector('#tabla-detalle tbody');
     tbody.innerHTML = '';
     let total = 0;
@@ -175,9 +171,12 @@ function renderDetalle() {
         const subtotal = d.cantidad * d.precio;
         total += subtotal;
         const tr = document.createElement('tr');
+        tr.className = resaltarId === d.producto_id ? "bg-green-100 transition" : "";
         tr.innerHTML = `
             <td class="border px-2 py-1">${d.nombre}</td>
-            <td class="border px-2 py-1">${d.cantidad}</td>
+            <td class="border px-2 py-1">
+                <input type="number" min="1" class="w-16 border rounded text-center cantidad-editar" data-id="${d.producto_id}" value="${d.cantidad}">
+            </td>
             <td class="border px-2 py-1">${formatoGuarani(d.precio)}</td>
             <td class="border px-2 py-1">${formatoGuarani(subtotal)}</td>
             <td class="border px-2 py-1 text-center">
@@ -189,6 +188,30 @@ function renderDetalle() {
 
     document.getElementById('totalVenta').textContent = `Total: ${formatoGuarani(total)}`;
 
+    // Editar cantidad
+    document.querySelectorAll('.cantidad-editar').forEach(input => {
+        input.addEventListener('change', e => {
+            const id = parseInt(e.target.dataset.id);
+            let nuevaCantidad = parseInt(e.target.value);
+            if (isNaN(nuevaCantidad) || nuevaCantidad < 1) {
+                nuevaCantidad = 1;
+                e.target.value = 1;
+            }
+            const producto = productosCache.find(p => p.id === id);
+            const existing = detalle.find(d => d.producto_id === id);
+            const stockDisponible = producto.stock - (existing.cantidad - nuevaCantidad);
+            if (nuevaCantidad > stockDisponible) {
+                mostrarMensaje(`Cantidad supera stock disponible: ${stockDisponible}`, "error");
+                nuevaCantidad = stockDisponible;
+                e.target.value = stockDisponible;
+            }
+            existing.cantidad = nuevaCantidad;
+            renderDetalle();
+            actualizarSelectProductos();
+        });
+    });
+
+    // Eliminar producto
     document.querySelectorAll('.eliminarProducto').forEach(btn => {
         btn.addEventListener('click', e => {
             const id = parseInt(e.target.dataset.id);
@@ -251,23 +274,21 @@ async function cargarVentas() {
     }
 }
 
-// Mostrar mensajes
+// Mensajes tipo toast
 function mostrarMensaje(texto, tipo) {
     const mensajeDiv = document.getElementById("mensaje");
     if (!mensajeDiv) return;
 
     mensajeDiv.textContent = texto;
     mensajeDiv.className = tipo === "success" 
-        ? "bg-green-500 text-white p-2 rounded my-2"
-        : "bg-red-500 text-white p-2 rounded my-2";
+        ? "bg-green-500 text-white p-2 rounded my-2 transition"
+        : "bg-red-500 text-white p-2 rounded my-2 transition";
 
     mensajeDiv.style.display = "block";
     setTimeout(() => { mensajeDiv.style.display = "none"; }, 3000);
 }
 
-// -------------------
-// Navegación rápida
-// -------------------
+// Navegación rápida y atajos
 document.addEventListener("DOMContentLoaded", () => {
     const codigoBarrasInput = document.getElementById("codigoBarras");
     const productoInputField = document.getElementById("productoInput");
@@ -275,43 +296,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const formVenta = document.getElementById("form-venta");
     const finalizarBtn = document.getElementById("finalizarVenta");
 
-    // Atajos globales
+    // Atajos
     document.addEventListener("keydown", (e) => {
-        if (e.ctrlKey && e.key === "f") { // Ctrl + F = buscar producto
-            e.preventDefault();
-            productoInputField.focus();
-        }
-        if (e.ctrlKey && e.key === "b") { // Ctrl + B = código de barras
-            e.preventDefault();
-            codigoBarrasInput.focus();
-        }
-        if (e.ctrlKey && e.key === "Enter") { // Ctrl + Enter = finalizar venta
-            e.preventDefault();
-            finalizarVenta();
-        }
+        if (e.ctrlKey && e.key === "f") { e.preventDefault(); productoInputField.focus(); }
+        if (e.ctrlKey && e.key === "b") { e.preventDefault(); codigoBarrasInput.focus(); }
+        if (e.ctrlKey && e.key === "Enter") { e.preventDefault(); finalizarVenta(); }
     });
 
-    // Navegación con Enter
+    // Enter para navegar
     [codigoBarrasInput, productoInputField, cantidadInput].forEach((input, idx, arr) => {
         input.addEventListener("keydown", (e) => {
             if (e.key === "Enter") {
                 e.preventDefault();
-                if (idx < arr.length - 1) {
-                    arr[idx + 1].focus();
-                } else {
-                    document.getElementById("agregar-producto").click();
-                }
+                if (idx < arr.length - 1) arr[idx + 1].focus();
+                else document.getElementById("agregar-producto").click();
             }
         });
     });
 
     // Finalizar venta
     function finalizarVenta() {
-        if (detalle.length === 0) {
-            mostrarMensaje("No hay productos en la venta", "error");
-            return;
-        }
-        formVenta.requestSubmit(); // dispara el submit
+        if (detalle.length === 0) return mostrarMensaje("No hay productos en la venta", "error");
+        formVenta.requestSubmit();
     }
 
     finalizarBtn?.addEventListener("click", finalizarVenta);
