@@ -2,20 +2,11 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const sqlite3 = require("sqlite3").verbose();
-const path = require("path");
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-// Conexión a la base de datos
-const dbPath = path.join(__dirname, "db", "database.sqlite");
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) console.error("Error al conectar con la base de datos:", err.message);
-    else console.log("Conectado a la base de datos SQLite");
-});
 
 // Rutas con prefijo /api
 const productosRoutes = require("./routes/productos");
@@ -34,6 +25,17 @@ app.use("/api/reportes", reportesRoutes);
 const adminRoutes = require("./routes/admin");
 app.use("/api/admin", adminRoutes);
 
+// Manejo de rutas no encontradas
+app.use((req, res) => {
+    res.status(404).json({ error: "Ruta no encontrada" });
+});
+
+// Manejo global de errores
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: "Error interno del servidor" });
+});
+
 // Iniciar servidor
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));

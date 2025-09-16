@@ -1,50 +1,46 @@
+// backend/routes/productos.js
 const express = require('express');
 const router = express.Router();
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-
-// Conexión a la base de datos
-const dbPath = path.join(__dirname, '../db/database.sqlite');
-const db = new sqlite3.Database(dbPath);
+const productoController = require('../controllers/productoController');
 
 // Obtener todos los productos
-router.get('/', (req, res) => {
-    db.all("SELECT * FROM productos", [], (err, rows) => {
-        if(err) return res.status(500).json({ success: false, message: err.message });
-        res.json(rows);
-    });
-});
+router.get('/', productoController.getAll);
 
 // Crear un nuevo producto
-router.post('/', (req, res) => {
-    const { nombre, descripcion, precio, stock, codigo_barras } = req.body;
+router.post('/', async (req, res) => {
+    try {
+        const { nombre, codigo_barras, precio, stock } = req.body;
 
-    if (!nombre || precio == null || stock == null) {
-        return res.status(400).json({ success: false, message: "Faltan campos obligatorios" });
-    }
-
-    db.run(
-        "INSERT INTO productos (nombre, descripcion, precio, stock, codigo_barras) VALUES (?, ?, ?, ?, ?)",
-        [nombre, descripcion, precio, stock, codigo_barras],
-        function(err) {
-            if(err) return res.status(500).json({ success: false, message: err.message });
-            res.json({ success: true, id: this.lastID });
+        if (!nombre || precio == null || stock == null) {
+            return res.status(400).json({ success: false, message: "Faltan campos obligatorios" });
         }
-    );
+
+        const id = await productoController.create({ nombre, codigo_barras, precio, stock });
+        res.json({ success: true, id });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
 });
 
 // Actualizar un producto existente por ID
-router.put('/:id', (req, res) => {
-    const { nombre, descripcion, precio, stock, codigo_barras } = req.body;
+router.put('/:id', async (req, res) => {
+    try {
+        const { nombre, codigo_barras, precio, stock } = req.body;
 
-    db.run(
-        "UPDATE productos SET nombre=?, descripcion=?, precio=?, stock=?, codigo_barras=? WHERE id=?",
-        [nombre, descripcion, precio, stock, codigo_barras, req.params.id],
-        function(err) {
-            if(err) return res.status(500).json({ success: false, message: err.message });
-            res.json({ success: true });
+        if (!nombre || precio == null || stock == null) {
+            return res.status(400).json({ success: false, message: "Faltan campos obligatorios" });
         }
-    );
+
+        // Aquí suponemos que tu modelo productoController tiene un método update
+        if (productoController.update) {
+            await productoController.update(req.params.id, { nombre, codigo_barras, precio, stock });
+            res.json({ success: true });
+        } else {
+            res.status(501).json({ success: false, message: "Actualización no implementada" });
+        }
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
 });
 
 module.exports = router;

@@ -1,26 +1,28 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-
-const dbPath = path.join(__dirname, '../db/database.sqlite');
-const db = new sqlite3.Database(dbPath);
+// backend/models/cliente.js
+const { run, all } = require('../db/database');
 
 // Obtener todos los clientes
-function getAll(callback) {
-    db.all("SELECT * FROM clientes", [], (err, rows) => {
-        callback(err, rows);
-    });
+async function getAll() {
+    try {
+        const clientes = await all("SELECT * FROM clientes");
+        return clientes;
+    } catch (err) {
+        throw new Error('Error al obtener clientes: ' + err.message);
+    }
 }
 
 // Crear un cliente
-function create(cliente, callback) {
-    const { nombre, correo, telefono } = cliente;
-    db.run(
-        "INSERT INTO clientes (nombre, correo, telefono) VALUES (?, ?, ?)",
-        [nombre, correo, telefono],
-        function(err) {
-            callback(err, this.lastID);
-        }
-    );
+async function create(cliente) {
+    try {
+        const { nombre, correo, telefono } = cliente;
+        const id = await run(
+            "INSERT INTO clientes (nombre, correo, telefono) VALUES (?, ?, ?)",
+            [nombre, correo, telefono]
+        );
+        return id;
+    } catch (err) {
+        throw new Error('Error al crear cliente: ' + err.message);
+    }
 }
 
 module.exports = { getAll, create };

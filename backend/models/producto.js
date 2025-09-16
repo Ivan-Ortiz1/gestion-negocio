@@ -1,24 +1,29 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+// backend/models/producto.js
+const { run, all } = require('../db/database');
 
-const dbPath = path.join(__dirname, '../db/database.sqlite');
-const db = new sqlite3.Database(dbPath);
-
-function getAll(callback) {
-    db.all("SELECT * FROM productos", [], (err, rows) => {
-        callback(err, rows);
-    });
+// Obtener todos los productos
+async function getAll() {
+    try {
+        const productos = await all("SELECT * FROM productos");
+        return productos;
+    } catch (err) {
+        throw new Error('Error al obtener productos: ' + err.message);
+    }
 }
 
-function create(producto, callback) {
-    const { nombre, descripcion, precio, stock } = producto;
-    db.run(
-        "INSERT INTO productos (nombre, descripcion, precio, stock) VALUES (?, ?, ?, ?)",
-        [nombre, descripcion, precio, stock],
-        function(err) {
-            callback(err, this.lastID);
-        }
-    );
+// Crear un producto
+async function create(producto) {
+    try {
+        const { nombre, codigo_barras, precio, stock } = producto;
+
+        const id = await run(
+            "INSERT INTO productos (nombre, codigo_barras, precio, stock) VALUES (?, ?, ?, ?)",
+            [nombre, codigo_barras, precio, stock]
+        );
+        return id;
+    } catch (err) {
+        throw new Error('Error al crear producto: ' + err.message);
+    }
 }
 
 module.exports = { getAll, create };

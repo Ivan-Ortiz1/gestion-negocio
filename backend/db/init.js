@@ -12,10 +12,9 @@ db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS productos (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre TEXT NOT NULL,
-        descripcion TEXT,
+        codigo_barras TEXT UNIQUE,
         precio REAL NOT NULL,
-        stock INTEGER NOT NULL,
-        codigo_barras TEXT UNIQUE
+        stock INTEGER NOT NULL
     )`);
 
     // Tabla clientes
