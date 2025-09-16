@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard - Gestión de Negocios</title>
+<title>Dashboard - KairoSoft</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="stylesheet" href="css/styles.css">
@@ -11,18 +11,34 @@
 <script src="js/clientes.js" defer></script>
 <script src="js/ventas.js" defer></script>
 <script src="js/reportes.js" defer></script>
+<style>
+    body { font-family: 'Inter', sans-serif; }
+    .mensaje {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        z-index: 50;
+        display: none;
+    }
+    .mensaje.success { background-color: #16a34a; color: white; }
+    .mensaje.error { background-color: #dc2626; color: white; }
+    .mensaje.info { background-color: #2563eb; color: white; }
+</style>
 </head>
-<body class="flex h-screen font-sans">
+<body class="flex h-screen font-sans bg-gray-900 text-gray-100">
 
 <script>
-  // Verificar login
-  if(!localStorage.getItem('usuario')){
+  // Verificar login con sessionStorage
+  if(!sessionStorage.getItem('usuario')){
       window.location.href = 'index.html';
   }
 </script>
 
 <!-- Sidebar -->
-<aside id="sidebar" class="bg-gray-800 text-white w-64 p-4 hidden md:block transition-transform duration-300">
+<aside id="sidebar" class="bg-gray-800 text-white w-64 p-4 hidden md:block transition-transform duration-300 transform -translate-x-0">
   <h2 class="text-xl font-bold mb-6">Dashboard</h2>
   <ul>
     <li class="mb-3"><button data-section="ventas" class="hover:text-gray-300 w-full text-left">Ventas</button></li>
@@ -36,27 +52,27 @@
 <!-- Contenido principal -->
 <div class="flex-1 flex flex-col">
   <!-- Header -->
-  <header class="bg-gray-100 p-4 flex items-center justify-between shadow">
-    <button id="btn-toggle-sidebar" class="md:hidden bg-gray-800 text-white px-2 py-1 rounded">☰</button>
-    <h1 class="text-xl font-bold">Gestión de Negocios</h1>
+  <header class="bg-gray-800 p-4 flex items-center justify-between shadow text-gray-100">
+    <button id="btn-toggle-sidebar" class="md:hidden bg-gray-700 text-white px-2 py-1 rounded">☰</button>
+    <h1 class="text-xl font-bold">KairoSoft - Gestión de Negocios</h1>
   </header>
 
   <!-- Main Content -->
   <main class="p-6 overflow-auto flex-1">
 
     <!-- Mensajes -->
-    <div id="mensaje" class="hidden"></div>
+    <div id="mensaje" class="mensaje"></div>
 
     <!-- Ventas -->
     <section id="ventas" class="section">
-      <h2 class="text-2xl font-bold mb-4">Registrar Venta</h2>
-      <form id="form-venta" class="bg-white p-4 shadow rounded mb-6">
+      <h2 class="text-2xl font-bold mb-4 text-blue-400">Registrar Venta</h2>
+      <form id="form-venta" class="bg-gray-800 p-6 shadow rounded mb-6 border border-gray-700">
         
         <!-- Cliente con autocompletado -->
         <div class="mb-4 relative">
           <label class="block font-semibold mb-1">Cliente</label>
-          <input type="text" id="clienteInput" class="w-full border p-2 rounded" placeholder="Escriba el nombre del cliente">
-          <ul id="clienteSuggestions" class="absolute bg-white border w-full mt-1 rounded z-10 hidden"></ul>
+          <input type="text" id="clienteInput" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded focus:border-blue-500 focus:ring-2 focus:ring-blue-400 outline-none transition" placeholder="Escriba el nombre del cliente">
+          <ul id="clienteSuggestions" class="absolute bg-gray-700 border border-gray-600 w-full mt-1 rounded z-10 hidden text-gray-100"></ul>
           <select id="cliente" class="hidden">
             <option value="">Desconocido</option>
           </select>
@@ -65,23 +81,23 @@
         <!-- Código de barras -->
         <div class="mb-4">
           <label class="block font-semibold mb-1">Código de barras</label>
-          <input type="text" id="codigoBarras" class="w-full border p-2 rounded" placeholder="Escanee o ingrese el código">
+          <input type="text" id="codigoBarras" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded focus:border-blue-500 focus:ring-2 focus:ring-blue-400 outline-none transition" placeholder="Escanee o ingrese el código" autofocus>
         </div>
 
         <!-- Producto con autocompletado -->
         <div class="mb-4 relative">
           <label class="block font-semibold mb-1">Producto</label>
-          <input type="text" id="productoInput" class="w-full border p-2 rounded" placeholder="Escriba el nombre o código de barras">
-          <ul id="productoSuggestions" class="absolute bg-white border w-full mt-1 rounded z-10 hidden"></ul>
-          <input type="number" id="cantidad" class="w-full border p-2 rounded mt-2" placeholder="Cantidad">
-          <button type="button" id="agregar-producto" class="bg-blue-500 text-white px-3 py-1 mt-2 rounded">Agregar Producto</button>
+          <input type="text" id="productoInput" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded focus:border-blue-500 focus:ring-2 focus:ring-blue-400 outline-none transition" placeholder="Escriba el nombre o código de barras">
+          <ul id="productoSuggestions" class="absolute bg-gray-700 border border-gray-600 w-full mt-1 rounded z-10 hidden text-gray-100"></ul>
+          <input type="number" id="cantidad" class="w-full border border-gray-600 bg-gray-700 text-gray-100 p-2 rounded mt-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 outline-none transition" placeholder="Cantidad" value="1" min="1">
+          <button type="button" id="agregar-producto" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 mt-2 rounded transition">Agregar Producto</button>
           <select id="producto" class="hidden"></select>
         </div>
 
         <!-- Detalle de venta -->
-        <table id="tabla-detalle" class="table-auto w-full mb-2 border-collapse border border-gray-300">
+        <table id="tabla-detalle" class="table-auto w-full mb-2 border-collapse border border-gray-600 text-gray-100">
           <thead>
-            <tr class="bg-gray-200">
+            <tr class="bg-gray-700 text-gray-100">
               <th class="border px-2 py-1">Producto</th>
               <th class="border px-2 py-1">Cantidad</th>
               <th class="border px-2 py-1">Precio</th>
@@ -92,14 +108,15 @@
           <tbody></tbody>
         </table>
         <p id="totalVenta" class="font-bold text-lg mb-4">Total: ₲0</p>
-        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Registrar Venta</button>
+        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition">Registrar Venta</button>
+        <button type="button" id="finalizarVenta" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded ml-2 transition">Finalizar Venta (Ctrl+Enter)</button>
       </form>
 
       <!-- Ventas registradas -->
-      <h2 class="text-xl font-bold mb-2">Ventas Registradas</h2>
-      <table id="tabla-ventas" class="table-auto w-full border-collapse border border-gray-300">
+      <h2 class="text-xl font-bold mb-2 text-blue-400">Ventas Registradas</h2>
+      <table id="tabla-ventas" class="table-auto w-full border-collapse border border-gray-600 text-gray-100">
         <thead>
-          <tr class="bg-gray-200">
+          <tr class="bg-gray-700 text-gray-100">
             <th class="border px-2 py-1">ID</th>
             <th class="border px-2 py-1">Cliente</th>
             <th class="border px-2 py-1">Fecha</th>
@@ -197,8 +214,15 @@
 <script>
 const btnLogout = document.getElementById('btn-logout');
 btnLogout.addEventListener('click', () => {
-    localStorage.removeItem('usuario');
+    sessionStorage.removeItem('usuario');
     window.location.href = 'index.html';
+});
+
+// Toggle sidebar responsive
+const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+const sidebar = document.getElementById('sidebar');
+btnToggleSidebar.addEventListener('click', () => {
+    sidebar.classList.toggle('-translate-x-full');
 });
 </script>
 

@@ -265,7 +265,59 @@ function mostrarMensaje(texto, tipo) {
     setTimeout(() => { mensajeDiv.style.display = "none"; }, 3000);
 }
 
-// Inicialización al cargar el DOM
+// -------------------
+// Navegación rápida
+// -------------------
+document.addEventListener("DOMContentLoaded", () => {
+    const codigoBarrasInput = document.getElementById("codigoBarras");
+    const productoInputField = document.getElementById("productoInput");
+    const cantidadInput = document.getElementById("cantidad");
+    const formVenta = document.getElementById("form-venta");
+    const finalizarBtn = document.getElementById("finalizarVenta");
+
+    // Atajos globales
+    document.addEventListener("keydown", (e) => {
+        if (e.ctrlKey && e.key === "f") { // Ctrl + F = buscar producto
+            e.preventDefault();
+            productoInputField.focus();
+        }
+        if (e.ctrlKey && e.key === "b") { // Ctrl + B = código de barras
+            e.preventDefault();
+            codigoBarrasInput.focus();
+        }
+        if (e.ctrlKey && e.key === "Enter") { // Ctrl + Enter = finalizar venta
+            e.preventDefault();
+            finalizarVenta();
+        }
+    });
+
+    // Navegación con Enter
+    [codigoBarrasInput, productoInputField, cantidadInput].forEach((input, idx, arr) => {
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                if (idx < arr.length - 1) {
+                    arr[idx + 1].focus();
+                } else {
+                    document.getElementById("agregar-producto").click();
+                }
+            }
+        });
+    });
+
+    // Finalizar venta
+    function finalizarVenta() {
+        if (detalle.length === 0) {
+            mostrarMensaje("No hay productos en la venta", "error");
+            return;
+        }
+        formVenta.requestSubmit(); // dispara el submit
+    }
+
+    finalizarBtn?.addEventListener("click", finalizarVenta);
+});
+
+// Inicialización
 document.addEventListener('DOMContentLoaded', () => {
     cargarSelects();
     cargarVentas();
