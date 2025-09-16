@@ -14,14 +14,13 @@ async function getAll(req, res) {
 // Crear una nueva venta
 async function create(req, res) {
     try {
-        const { clienteId, total, detalles } = req.body;
+        const { cliente_id, productos } = req.body;
 
-        // Validación básica
-        if (!clienteId || total == null || !Array.isArray(detalles) || detalles.length === 0) {
-            return res.status(400).json({ error: 'clienteId, total y detalles son obligatorios' });
+        if (!cliente_id || !Array.isArray(productos) || productos.length === 0) {
+            return res.status(400).json({ error: 'cliente_id y productos son obligatorios' });
         }
 
-        const id = await Venta.create({ clienteId, total, detalles });
+        const id = await Venta.create({ cliente_id, productos });
         res.status(201).json({ id });
     } catch (err) {
         console.error('Error al crear venta:', err);

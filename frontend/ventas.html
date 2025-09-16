@@ -24,6 +24,10 @@
 </style>
 </head>
 <body class="flex h-screen bg-gray-100 text-gray-900">
+<div id="mensaje" class="hidden"></div>
+<div id="loading" style="display:none;position:fixed;inset:0;z-index:2000;align-items:center;justify-content:center;background:rgba(0,0,0,0.4)">
+  <div class="bg-white p-6 rounded shadow text-lg font-bold text-blue-600 animate-pulse">Cargando...</div>
+</div>
 
 <script>
   if(!sessionStorage.getItem('usuario')){

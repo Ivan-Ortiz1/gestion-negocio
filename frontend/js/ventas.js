@@ -136,6 +136,7 @@ export async function initVentas() {
         if (detalle.length === 0) return mostrarMensaje('Agrega al menos un producto', "error");
 
         try {
+            // Al registrar venta, envía cliente_id y productos con producto_id
             await fetch(`${API_URL}/ventas`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

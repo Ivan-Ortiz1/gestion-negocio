@@ -2,11 +2,12 @@
 const { run, all, get } = require('../db/database');
 
 // Crear una venta con detalle, validación de stock y cálculo de total
+// Recibe cliente_id y productos
 async function create(venta) {
-    const { clienteId, detalles } = venta;
+    const { cliente_id, productos } = venta;
 
-    if (!clienteId || !Array.isArray(detalles) || detalles.length === 0) {
-        throw new Error('clienteId y detalles son obligatorios');
+    if (!cliente_id || !Array.isArray(productos) || productos.length === 0) {
+        throw new Error('cliente_id y productos son obligatorios');
     }
 
     try {
@@ -18,23 +19,23 @@ async function create(venta) {
         // Insertar venta con total 0 inicialmente
         const ventaId = await run(
             "INSERT INTO ventas (cliente_id, fecha, total) VALUES (?, datetime('now'), 0)",
-            [clienteId]
+            [cliente_id]
         );
 
-        for (const item of detalles) {
+        for (const item of productos) {
             const producto = await get(
                 "SELECT stock, precio FROM productos WHERE id = ?",
-                [item.productoId]
+                [item.producto_id]
             );
 
             if (!producto) {
                 await run("ROLLBACK");
-                throw new Error(`Producto ID ${item.productoId} no encontrado`);
+                throw new Error(`Producto ID ${item.producto_id} no encontrado`);
             }
 
             if (producto.stock < item.cantidad) {
                 await run("ROLLBACK");
-                throw new Error(`Stock insuficiente para producto ID ${item.productoId}`);
+                throw new Error(`Stock insuficiente para producto ID ${item.producto_id}`);
             }
 
             const subtotal = producto.precio * item.cantidad;
@@ -43,13 +44,13 @@ async function create(venta) {
             // Insertar detalle de venta
             await run(
                 "INSERT INTO detalles_venta (venta_id, producto_id, cantidad, precio) VALUES (?, ?, ?, ?)",
-                [ventaId, item.productoId, item.cantidad, producto.precio]
+                [ventaId, item.producto_id, item.cantidad, producto.precio]
             );
 
             // Actualizar stock del producto
             await run(
                 "UPDATE productos SET stock = stock - ? WHERE id = ?",
-                [item.cantidad, item.productoId]
+                [item.cantidad, item.producto_id]
             );
         }
 
@@ -59,7 +60,7 @@ async function create(venta) {
         // Commit
         await run("COMMIT");
 
-        return { id: ventaId, total: totalVenta, clienteId, detalles };
+        return { id: ventaId, total: totalVenta, cliente_id, productos };
 
     } catch (err) {
         await run("ROLLBACK");

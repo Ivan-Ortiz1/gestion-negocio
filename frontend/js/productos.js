@@ -1,4 +1,4 @@
-import { mostrarMensaje, formatoGuarani } from "./utils.js";
+import { mostrarMensaje, mostrarLoading, confirmar, formatoGuarani } from "./utils.js";
 import CONFIG from "./config.js";
 
 export let productosCache = []; // Cache global de productos
@@ -11,15 +11,17 @@ const formProducto = document.getElementById("form-producto");
 
 // Cargar productos desde API
 export async function cargarProductos() {
+    mostrarLoading(true);
     try {
         const res = await fetch(API_PRODUCTOS);
         const productos = await res.json();
-        productosCache = productos; // Actualizar cache
+        productosCache = productos;
         renderTablaProductos();
         actualizarSelectProductos();
     } catch (error) {
-        console.error(error);
-        mostrarMensaje("error", "Error al cargar productos");
+        mostrarMensaje("Error al cargar productos", "error");
+    } finally {
+        mostrarLoading(false);
     }
 }
 
@@ -101,15 +103,18 @@ export async function guardarProducto(producto) {
     }
 }
 
-// Eliminar producto
+// Eliminar producto con confirmación
 export async function eliminarProducto(id) {
+    if (!confirmar("¿Seguro que deseas eliminar este producto?")) return;
+    mostrarLoading(true);
     try {
         await fetch(`${API_PRODUCTOS}/${id}`, { method: "DELETE" });
-        mostrarMensaje("success", "Producto eliminado");
+        mostrarMensaje("Producto eliminado", "success");
         await cargarProductos();
     } catch (error) {
-        console.error(error);
-        mostrarMensaje("error", "Error al eliminar producto");
+        mostrarMensaje("Error al eliminar producto", "error");
+    } finally {
+        mostrarLoading(false);
     }
 }
 
@@ -172,13 +177,25 @@ formProducto?.addEventListener("submit", async (e) => {
     const stock = parseInt(document.getElementById("stockProducto").value);
     const id = document.getElementById("idProducto").value || null;
 
-    if (!nombre) return mostrarMensaje("error", "El nombre es obligatorio");
-    if (isNaN(precio) || precio < 0) return mostrarMensaje("error", "Precio inválido");
-    if (isNaN(stock) || stock < 0) return mostrarMensaje("error", "Stock inválido");
+    if (!nombre) {
+        mostrarMensaje("El nombre es obligatorio", "error");
+        document.getElementById("nombreProducto").focus();
+        return;
+    }
+    if (isNaN(precio) || precio < 0) {
+        mostrarMensaje("El precio debe ser un número positivo", "error");
+        document.getElementById("precioProducto").focus();
+        return;
+    }
+    if (isNaN(stock) || stock < 0) {
+        mostrarMensaje("El stock debe ser un número positivo", "error");
+        document.getElementById("stockProducto").focus();
+        return;
+    }
 
     const producto = { id, nombre, descripcion, precio, stock };
     await guardarProducto(producto);
-    mostrarMensaje("success", id ? "Producto actualizado" : "Producto agregado");
+    mostrarMensaje(id ? "Producto actualizado" : "Producto agregado", "success");
     formProducto.reset();
 });
 
