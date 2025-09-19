@@ -39,33 +39,34 @@
 ```bash
 git clone https://github.com/Ivan-Ortiz1/gestion-negocio.git
 cd gestion-negocio
+```
 
 2. Instala dependencias del backend:
-
+```bash
 cd backend
 npm install
-
+```
 
 Instala dependencias del frontend (si aplica):
-
+```bash
 cd ../frontend
 npm install
-
+```
 
 Configura variables de entorno:
 Crea un archivo .env en backend con las siguientes variables (ejemplo):
-
+```bash
 PORT=3000
 DB_URL=mongodb://localhost:27017/gestion-negocio
 SECRET_KEY=tu_clave_secreta
-
+```
 Uso
 
 Levanta el servidor backend:
-
+```bash
 cd backend
 npm start
-
+```
 
 Accede a la aplicación desde tu navegador:
 
@@ -73,7 +74,7 @@ http://localhost:3000
 
 
 Navega por las secciones de clientes, productos y ventas para gestionar tu negocio.
-
+```bash
 Estructura del proyecto
 gestion-negocio/
 │
@@ -82,7 +83,7 @@ gestion-negocio/
 ├── .gitignore
 ├── package.json
 └── README.md
-
+```
 Mejores prácticas
 
 Utilizar autenticación y roles de usuario (administrador, empleado, etc.)
