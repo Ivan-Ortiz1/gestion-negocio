@@ -1,3 +1,4 @@
+// backend/controllers/clienteController.js
 const Cliente = require('../models/cliente');
 
 // Obtener todos los clientes
@@ -23,11 +24,15 @@ async function create(req, res) {
             return res.status(400).json({ error: "Correo electrónico inválido" });
         }
         if (telefono && !telefono.match(/^\d{6,}$/)) {
-            return res.status(400).json({ error: "Teléfono inválido" });
+            return res.status(400).json({ error: "Teléfono inválido (mínimo 6 dígitos numéricos)" });
         }
 
         const id = await Cliente.create({ nombre, correo, telefono });
-        res.status(201).json({ id });
+        res.status(201).json({
+            success: true,
+            message: "Cliente creado exitosamente",
+            data: { id, nombre, correo, telefono }
+        });
     } catch (err) {
         console.error('Error al crear cliente:', err);
         res.status(500).json({ error: 'Error al crear cliente' });
@@ -40,12 +45,19 @@ async function update(req, res) {
         const { nombre, correo, telefono } = req.body;
         const id = req.params.id;
 
+        if (!id) {
+            return res.status(400).json({ error: 'El ID del cliente es obligatorio' });
+        }
         if (!nombre || !correo) {
             return res.status(400).json({ error: 'Nombre y correo son obligatorios' });
         }
 
-        await Cliente.update(id, { nombre, correo, telefono });
-        res.json({ success: true });
+        const updated = await Cliente.update(id, { nombre, correo, telefono });
+        res.json({
+            success: true,
+            message: "Cliente actualizado correctamente",
+            data: updated
+        });
     } catch (err) {
         console.error('Error al actualizar cliente:', err);
         res.status(500).json({ error: 'Error al actualizar cliente' });
@@ -56,8 +68,16 @@ async function update(req, res) {
 async function remove(req, res) {
     try {
         const id = req.params.id;
-        await Cliente.remove(id);
-        res.json({ success: true });
+
+        if (!id) {
+            return res.status(400).json({ error: 'El ID del cliente es obligatorio' });
+        }
+
+        const result = await Cliente.remove(id);
+        res.json({
+            success: true,
+            message: result.message
+        });
     } catch (err) {
         console.error('Error al eliminar cliente:', err);
         res.status(500).json({ error: 'Error al eliminar cliente' });

@@ -23,13 +23,21 @@ async function getAll(req, res) {
 // Crear un nuevo producto
 async function create(req, res) {
   try {
-    const { nombre, precio, stock } = req.body;
+    const { nombre, precio, stock, codigo_barras } = req.body;
 
-    const id = await Producto.create({ nombre, precio, stock });
+    // Validaciones básicas
+    if (!nombre || typeof nombre !== "string" || nombre.trim() === "") {
+      return res.status(400).json({ success: false, message: "El nombre es obligatorio", data: null });
+    }
+    if (precio == null || isNaN(precio) || precio < 0) {
+      return res.status(400).json({ success: false, message: "El precio debe ser un número positivo", data: null });
+    }
+
+    const id = await Producto.create({ nombre, precio, stock: stock || 0, codigo_barras });
     res.status(201).json({
       success: true,
       message: "Producto creado correctamente",
-      data: { id }
+      data: { id, nombre, precio, stock: stock || 0, codigo_barras }
     });
   } catch (err) {
     console.error("Error al crear producto:", err);
@@ -45,14 +53,13 @@ async function create(req, res) {
 async function update(req, res) {
   try {
     const id = req.params.id;
-    const { nombre, codigo_barras, precio, stock } = req.body;
+    const { nombre, precio, stock, codigo_barras } = req.body;
 
-    const actualizado = await Producto.update(id, {
-      nombre,
-      codigo_barras,
-      precio,
-      stock
-    });
+    if (!nombre || precio == null) {
+      return res.status(400).json({ success: false, message: "Nombre y precio son obligatorios", data: null });
+    }
+
+    const actualizado = await Producto.update(id, { nombre, precio, stock: stock || 0, codigo_barras });
 
     if (!actualizado) {
       return res.status(404).json({
@@ -65,7 +72,7 @@ async function update(req, res) {
     res.json({
       success: true,
       message: "Producto actualizado correctamente",
-      data: { id }
+      data: { id, nombre, precio, stock: stock || 0, codigo_barras }
     });
   } catch (err) {
     console.error("Error al actualizar producto:", err);
