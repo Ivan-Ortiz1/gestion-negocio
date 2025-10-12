@@ -5,11 +5,8 @@ const Producto = require("../models/producto");
 async function getAll(req, res) {
   try {
     const productos = await Producto.getAll();
-    res.json({
-      success: true,
-      message: "Productos obtenidos correctamente",
-      data: productos
-    });
+    // Devolver directamente el array para compatibilidad con frontend
+    res.json(productos);
   } catch (err) {
     console.error("Error al obtener productos:", err);
     res.status(500).json({

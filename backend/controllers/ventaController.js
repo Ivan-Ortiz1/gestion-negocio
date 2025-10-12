@@ -20,19 +20,11 @@ async function getAll(req, res) {
     }
 }
 
-// Crear una nueva venta
+// Crear una nueva venta (sin cliente)
 async function create(req, res) {
     try {
-        const { cliente_id, productos } = req.body;
+        const { productos } = req.body;
 
-        // Validaciones
-        if (!cliente_id || !Number.isInteger(cliente_id) || cliente_id < 1) {
-            return res.status(400).json({
-                success: false,
-                message: "Cliente inválido",
-                data: null
-            });
-        }
         if (!Array.isArray(productos) || productos.length === 0) {
             return res.status(400).json({
                 success: false,
@@ -58,7 +50,7 @@ async function create(req, res) {
             }
         }
 
-        const result = await Venta.create({ cliente_id, productos });
+        const result = await Venta.create({ productos });
         res.status(201).json(result);
 
     } catch (err) {

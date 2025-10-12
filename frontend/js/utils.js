@@ -35,5 +35,5 @@ export function confirmar(mensaje = "¿Estás seguro?") {
     return window.confirm(mensaje);
 }
 
-
-<div id="mensaje" class="hidden"></div>
+// Quitar cualquier HTML incrustado accidentalmente al final del archivo
+document.getElementById("mensaje").innerHTML = "";

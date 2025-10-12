@@ -3,7 +3,6 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const bcrypt = require('bcrypt');
 
-// Ruta absoluta al archivo database.sqlite
 const dbPath = path.join(__dirname, 'database.sqlite');
 const db = new sqlite3.Database(dbPath);
 
@@ -17,21 +16,14 @@ db.serialize(() => {
         stock INTEGER NOT NULL
     )`);
 
-    // Tabla clientes
-    db.run(`CREATE TABLE IF NOT EXISTS clientes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT NOT NULL,
-        correo TEXT,
-        telefono TEXT
-    )`);
+    // Tabla clientes -- ELIMINADA (no necesaria por ahora)
+    // db.run(`CREATE TABLE IF NOT EXISTS clientes (...)`);
 
-    // Tabla ventas
+    // Tabla ventas (sin cliente)
     db.run(`CREATE TABLE IF NOT EXISTS ventas (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        cliente_id INTEGER NOT NULL,
         fecha TEXT NOT NULL,
-        total REAL DEFAULT 0,
-        FOREIGN KEY(cliente_id) REFERENCES clientes(id)
+        total REAL DEFAULT 0
     )`);
 
     // Tabla detalles_venta
@@ -52,7 +44,6 @@ db.serialize(() => {
         contrasena TEXT
     )`);
 
-    // Insertar administrador inicial si no existe (con hash)
     db.get("SELECT * FROM administradores WHERE usuario = 'admin'", async (err, row) => {
         if(err) {
             console.error("Error al verificar administrador inicial:", err.message);
@@ -60,7 +51,7 @@ db.serialize(() => {
             return;
         }
         if(!row){
-            const hash = await bcrypt.hash('admin123', 10); // 10 rondas de sal
+            const hash = await bcrypt.hash('admin123', 10);
             db.run("INSERT INTO administradores (usuario, contrasena) VALUES (?, ?)", ['admin', hash], (err) => {
                 if(err) console.error("Error al crear admin inicial:", err.message);
                 else console.log("Administrador inicial creado: admin / admin123 (hashed)");

@@ -24,16 +24,12 @@ app.use(cors({
 const productosRoutes = require("./routes/productos");
 app.use("/api/productos", productosRoutes);
 
-const clientesRoutes = require("./routes/clientes");
-app.use("/api/clientes", clientesRoutes);
-
 const ventasRoutes = require("./routes/ventas");
 app.use("/api/ventas", ventasRoutes);
 
 const reportesRoutes = require("./routes/reportes");
 app.use("/api/reportes", reportesRoutes);
 
-// Rutas de administradores (login y registro)
 const adminRoutes = require("./routes/admin");
 app.use("/api/admin", adminRoutes);
 

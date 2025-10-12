@@ -4,24 +4,24 @@ const { run, all, get } = require('../db/database');
 /**
  * Crear una venta con detalles
  * Valida stock, calcula total y actualiza inventario
+ * Ahora SIN cliente_id
  */
 async function create(venta) {
-  const { cliente_id, productos } = venta;
+  const { productos } = venta;
 
-  if (!cliente_id || !Array.isArray(productos) || productos.length === 0) {
-    throw new Error('cliente_id y productos son obligatorios');
+  if (!Array.isArray(productos) || productos.length === 0) {
+    throw new Error('productos es obligatorio y debe ser un arreglo');
   }
 
   try {
-    // Iniciar transacción
     await run("BEGIN TRANSACTION");
 
     let totalVenta = 0;
 
-    // Insertar venta con total 0 inicialmente
+    // Insertar venta con total 0 inicialmente (sin cliente)
     const ventaResult = await run(
-      "INSERT INTO ventas (cliente_id, fecha, total) VALUES (?, datetime('now'), 0)",
-      [cliente_id]
+      "INSERT INTO ventas (fecha, total) VALUES (datetime('now'), 0)",
+      []
     );
     const ventaId = ventaResult.lastID;
 
@@ -44,29 +44,24 @@ async function create(venta) {
       const subtotal = producto.precio * item.cantidad;
       totalVenta += subtotal;
 
-      // Insertar detalle de venta
       await run(
         "INSERT INTO detalles_venta (venta_id, producto_id, cantidad, precio) VALUES (?, ?, ?, ?)",
         [ventaId, item.producto_id, item.cantidad, producto.precio]
       );
 
-      // Actualizar stock del producto
       await run(
         "UPDATE productos SET stock = stock - ? WHERE id = ?",
         [item.cantidad, item.producto_id]
       );
     }
 
-    // Actualizar total de la venta
     await run("UPDATE ventas SET total = ? WHERE id = ?", [totalVenta, ventaId]);
-
-    // Commit
     await run("COMMIT");
 
     return {
       success: true,
       message: "Venta creada correctamente",
-      data: { id: ventaId, total: totalVenta, cliente_id, productos }
+      data: { id: ventaId, total: totalVenta, productos }
     };
 
   } catch (err) {
@@ -76,16 +71,14 @@ async function create(venta) {
 }
 
 /**
- * Obtener todas las ventas con detalles
+ * Obtener todas las ventas con detalles (sin datos de cliente)
  */
 async function getAll() {
   const query = `
-    SELECT v.id as venta_id, v.fecha, v.total, 
-           c.id as cliente_id, c.nombre as cliente_nombre,
+    SELECT v.id as venta_id, v.fecha, v.total,
            p.id as producto_id, p.nombre as producto_nombre,
            dv.cantidad, dv.precio
     FROM ventas v
-    JOIN clientes c ON v.cliente_id = c.id
     LEFT JOIN detalles_venta dv ON v.id = dv.venta_id
     LEFT JOIN productos p ON dv.producto_id = p.id
     ORDER BY v.id DESC

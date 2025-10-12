@@ -1,7 +1,8 @@
 import { mostrarMensaje, formatoGuarani } from "./utils.js";
 import { productosCache, cargarProductos, setupAutocompleteProductos, actualizarSelectProductos } from "./productos.js";
-import { clientesCache, cargarClientes, setupAutocompleteClientes } from "./clientes.js";
-import { API_URL } from "./config.js";
+import CONFIG from "./config.js";
+
+const API_BASE = CONFIG?.API_BASE_URL || "";
 
 let detalle = [];
 
@@ -51,7 +52,6 @@ export function renderDetalle(resaltarId = null) {
 
     document.getElementById('totalVenta').textContent = `Total: ${formatoGuarani(total)}`;
 
-    // Editar cantidad
     document.querySelectorAll('.cantidad-editar').forEach(input => {
         input.addEventListener('change', e => {
             const id = parseInt(e.target.dataset.id);
@@ -81,7 +81,6 @@ export function renderDetalle(resaltarId = null) {
         });
     });
 
-    // Eliminar producto
     document.querySelectorAll('.eliminarProducto').forEach(btn => {
         btn.addEventListener('click', e => {
             const id = parseInt(e.target.dataset.id);
@@ -99,13 +98,10 @@ function limpiarDetalle() {
     actualizarSelectProductos(detalle);
 }
 
-export async function initVentas() {
-    await cargarClientes();
+export async function initVentas(apiBase = API_BASE) {
     await cargarProductos();
-    setupAutocompleteClientes('clienteInput', 'cliente');
     setupAutocompleteProductos('productoInput', 'producto', detalle);
 
-    // Botón agregar
     document.getElementById('agregar-producto')?.addEventListener('click', () => {
         const productoId = parseInt(document.getElementById('producto').value);
         const cantidad = parseInt(document.getElementById('cantidad').value);
@@ -114,7 +110,6 @@ export async function initVentas() {
         document.getElementById('productoInput').value = '';
     });
 
-    // Escaneo código de barras
     document.getElementById('codigoBarras')?.addEventListener('keypress', e => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -127,23 +122,18 @@ export async function initVentas() {
         }
     });
 
-    // Registrar venta
     document.getElementById('form-venta')?.addEventListener('submit', async e => {
         e.preventDefault();
-        let cliente_id = parseInt(document.getElementById('cliente').value);
-        cliente_id = isNaN(cliente_id) ? null : cliente_id;
 
         if (detalle.length === 0) return mostrarMensaje('Agrega al menos un producto', "error");
 
         try {
-            // Al registrar venta, envía cliente_id y productos con producto_id
-            await fetch(`${API_URL}/ventas`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cliente_id, productos: detalle })
-            });
+            await fetch(`${apiBase}/ventas`, {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ productos: detalle })
+             });
             limpiarDetalle();
-            await cargarClientes();
             await cargarProductos();
             mostrarMensaje('Venta registrada con éxito', "success");
         } catch (error) {
@@ -152,7 +142,6 @@ export async function initVentas() {
         }
     });
 
-    // Finalizar venta
     document.getElementById("finalizarVenta")?.addEventListener("click", () => {
         if (detalle.length === 0) return mostrarMensaje("No hay productos en la venta", "error");
         document.getElementById("form-venta").requestSubmit();
