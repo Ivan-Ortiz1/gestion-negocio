@@ -10,17 +10,16 @@
 - **Backend:** Node.js, Express.js
 - **Frontend:** HTML, CSS, JavaScript
 - **Motor de plantillas:** EJS
-- **Base de datos:** (Especificar si usas MongoDB, SQLite, MySQL, etc.)
+- **Base de datos:** SQLite
 - **Gestión de dependencias:** npm
 
 ---
 
 ## Funcionalidades principales
 
-- **Gestión de clientes:** agregar, editar, eliminar y listar clientes.
+
 - **Gestión de productos:** agregar, editar, eliminar y listar productos.
-- **Registro de ventas:** crear y consultar ventas con detalle de productos.
-- **Interfaz amigable:** uso de EJS para vistas dinámicas y JavaScript para interacción en frontend.
+- **Registro de ventas:** crear y consultar ventas con detalle de productos..
 
 ---
 
