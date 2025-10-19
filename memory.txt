@@ -1,0 +1,1 @@
+"""Haz una evaluacion exhaustiva del todo el codigo del proyecto dime si encuentras errores o incongruencias, dime si ya es funcional y que tanto porcentaje de avance tiene este proyecto de gestion de negocios para tener ya un mvp 100% funcional"""

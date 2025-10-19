@@ -71,24 +71,73 @@ async function create(venta) {
 }
 
 /**
- * Obtener todas las ventas con detalles (sin datos de cliente)
+ * Obtener ventas con paginación y detalles
+ * @param {number} page - Número de página
+ * @param {number} limit - Cantidad de items por página
+ * @param {string} fechaInicio - Fecha inicio opcional (YYYY-MM-DD)
+ * @param {string} fechaFin - Fecha fin opcional (YYYY-MM-DD)
  */
-async function getAll() {
-  const query = `
+async function getAll(page = 1, limit = 10, fechaInicio = null, fechaFin = null) {
+  // Primero obtenemos el total de ventas
+  let countQuery = "SELECT COUNT(DISTINCT v.id) as total FROM ventas v";
+  let countParams = [];
+  
+  if (fechaInicio && fechaFin) {
+    countQuery += " WHERE DATE(v.fecha) BETWEEN ? AND ?";
+    countParams = [fechaInicio, fechaFin];
+  }
+  
+  const totalCount = await get(countQuery, countParams);
+  const offset = (page - 1) * limit;
+
+  // Luego obtenemos las ventas paginadas con sus detalles
+  let query = `
     SELECT v.id as venta_id, v.fecha, v.total,
            p.id as producto_id, p.nombre as producto_nombre,
            dv.cantidad, dv.precio
     FROM ventas v
     LEFT JOIN detalles_venta dv ON v.id = dv.venta_id
     LEFT JOIN productos p ON dv.producto_id = p.id
-    ORDER BY v.id DESC
   `;
+  if (fechaInicio && fechaFin) {
+    query += " WHERE DATE(v.fecha) BETWEEN ? AND ?";
+  }
+  
+  query += ` ORDER BY v.id DESC LIMIT ? OFFSET ?`;
+
   try {
-    const rows = await all(query);
+    const queryParams = fechaInicio && fechaFin
+      ? [fechaInicio, fechaFin, limit, offset]
+      : [limit, offset];
+
+    const rows = await all(query, queryParams);
+    
+    // Agrupar los resultados por venta
+    const ventasMap = new Map();
+    rows.forEach(row => {
+      if (!ventasMap.has(row.venta_id)) {
+        ventasMap.set(row.venta_id, {
+          id: row.venta_id,
+          fecha: row.fecha,
+          total: row.total,
+          detalles: []
+        });
+      }
+      if (row.producto_id) {
+        ventasMap.get(row.venta_id).detalles.push({
+          producto_id: row.producto_id,
+          producto_nombre: row.producto_nombre,
+          cantidad: row.cantidad,
+          precio: row.precio
+        });
+      }
+    });
+
     return {
-      success: true,
-      message: "Ventas obtenidas correctamente",
-      data: rows
+      items: Array.from(ventasMap.values()),
+      total: totalCount.total,
+      page: page,
+      totalPages: Math.ceil(totalCount.total / limit)
     };
   } catch (err) {
     throw new Error('Error al obtener ventas: ' + err.message);

@@ -16,8 +16,6 @@ db.serialize(() => {
         stock INTEGER NOT NULL
     )`);
 
-    // Tabla clientes -- ELIMINADA (no necesaria por ahora)
-    // db.run(`CREATE TABLE IF NOT EXISTS clientes (...)`);
 
     // Tabla ventas (sin cliente)
     db.run(`CREATE TABLE IF NOT EXISTS ventas (

@@ -66,11 +66,11 @@ if (formLogin) {
             const res = await fetch(`${CONFIG.API_BASE_URL}/admin/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ usuario, contrasena })
+                body: JSON.stringify({ usuario, contrasena }),
+                credentials: 'include'
             });
             const data = await res.json();
             if (data.success) {
-                sessionStorage.setItem('usuario', data.usuario);
                 mostrarMensaje('success', 'Login exitoso! Redirigiendo...');
                 setTimeout(() => window.location.href = 'ventas.html', 1000);
             } else {
@@ -82,18 +82,18 @@ if (formLogin) {
     });
 }
 
-// Registro
-if (formRegistro) {
-    formRegistro.addEventListener('submit', async e => {
-        e.preventDefault();
-        const usuario = document.getElementById('usuarioRegistro').value;
-        const contrasena = document.getElementById('contrasenaRegistro').value;
-
-        try {
+                        if (data.success) {
+                            // Solo guardar usuario para UI, no token
+                            mostrarMensaje('success', 'Login exitoso! Redirigiendo...');
+                            setTimeout(() => window.location.href = 'ventas.html', 1000);
+                        } else {
+                            mostrarMensaje('error', data.message);
+                        }
             const res = await fetch(`${CONFIG.API_BASE_URL}/admin/registrar-admin`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ usuario, contrasena })
+                body: JSON.stringify({ usuario, contrasena }),
+                credentials: 'include'
             });
             const data = await res.json();
             if (data.success) {

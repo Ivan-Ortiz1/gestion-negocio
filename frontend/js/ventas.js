@@ -129,10 +129,11 @@ export async function initVentas(apiBase = API_BASE) {
 
         try {
             await fetch(`${apiBase}/ventas`, {
-                 method: 'POST',
-                 headers: { 'Content-Type': 'application/json' },
-                 body: JSON.stringify({ productos: detalle })
-             });
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productos: detalle }),
+                credentials: 'include'
+            });
             limpiarDetalle();
             await cargarProductos();
             mostrarMensaje('Venta registrada con éxito', "success");

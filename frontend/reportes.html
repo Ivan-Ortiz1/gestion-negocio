@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reportes - KairoSoft</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="flex h-screen bg-gray-100 text-gray-900">
+    <!-- Mensaje toast -->
+    <div id="mensaje" class="hidden fixed top-4 right-4 z-50 p-4 rounded-lg text-white font-semibold"></div>
+
+    <!-- Loading -->
+    <div id="loading" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <p class="mt-4 text-gray-700 font-semibold">Cargando...</p>
+        </div>
+    </div>
+
+    <!-- Verificación de sesión -->
+    <script>
+        if(!sessionStorage.getItem('usuario')){
+            window.location.href = 'index.html';
+        }
+    </script>
+
+    <!-- Sidebar -->
+    <aside class="bg-gray-800 text-white w-64 p-4 hidden md:block">
+        <h2 class="text-xl font-bold mb-6">KairoSoft</h2>
+        <ul>
+            <li class="mb-3"><a href="ventas.html" class="hover:text-gray-300 w-full block">Ventas</a></li>
+            <li class="mb-3"><a href="productos.html" class="hover:text-gray-300 w-full block">Productos</a></li>
+            <li class="mb-3"><a href="reportes.html" class="hover:text-gray-300 w-full block">Reportes</a></li>
+            <li class="mb-3"><button id="btn-logout" class="hover:text-red-400 w-full text-left">Cerrar sesión</button></li>
+        </ul>
+    </aside>
+
+    <!-- Contenido principal -->
+    <div class="flex-1 flex flex-col">
+        <header class="bg-gray-800 p-4 flex items-center justify-between shadow text-gray-100">
+            <h1 class="text-xl font-bold">KairoSoft - Reportes</h1>
+        </header>
+
+        <main class="p-6 overflow-auto flex-1">
+            <!-- Filtros generales -->
+            <div class="mb-6 bg-white p-4 rounded-lg shadow">
+                <h3 class="text-lg font-semibold mb-4">Filtros</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Fecha Inicio</label>
+                        <input type="date" id="fecha-inicio" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Fecha Fin</label>
+                        <input type="date" id="fecha-fin" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div class="flex items-end">
+                        <button id="btn-generar" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full">
+                            Generar Reportes
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid de reportes -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Ventas por período -->
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold mb-4">Ventas por Período</h3>
+                    <canvas id="grafico-ventas" width="400" height="300"></canvas>
+                    <div id="resumen-ventas" class="mt-4 grid grid-cols-2 gap-4">
+                        <div class="p-3 bg-blue-50 rounded">
+                            <p class="text-sm text-gray-600">Total Ventas</p>
+                            <p class="text-xl font-bold text-blue-600" id="total-ventas">0</p>
+                        </div>
+                        <div class="p-3 bg-green-50 rounded">
+                            <p class="text-sm text-gray-600">Total Ingresos</p>
+                            <p class="text-xl font-bold text-green-600" id="total-ingresos">₲0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Productos más vendidos -->
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold mb-4">Productos más Vendidos</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full table-auto">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-productos-vendidos" class="bg-white divide-y divide-gray-200">
+                                <!-- Aquí se insertarán las filas dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Estado del inventario -->
+                <div class="bg-white p-4 rounded-lg shadow md:col-span-2">
+                    <h3 class="text-lg font-semibold mb-4">Estado del Inventario</h3>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Mostrar productos con stock menor a:</label>
+                        <div class="mt-1 flex rounded-md shadow-sm">
+                            <input type="number" id="stock-minimo" min="0" value="10" 
+                                   class="flex-1 rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                            <button id="btn-filtrar-stock" 
+                                    class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Filtrar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full table-auto">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Actual</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Vendidos</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-inventario" class="bg-white divide-y divide-gray-200">
+                                <!-- Aquí se insertarán las filas dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initReportes } from './js/reportes.js';
+        
+        const btnLogout = document.getElementById('btn-logout');
+        btnLogout.addEventListener('click', () => {
+            sessionStorage.removeItem('usuario');
+            window.location.href = 'index.html';
+        });
+
+        // Inicializar reportes
+        initReportes();
+    </script>
+</body>
+</html>

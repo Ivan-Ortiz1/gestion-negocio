@@ -29,3 +29,7 @@ frontend/logs/
 Thumbs.db
 .vscode/
 .idea/
+
+# === txt ===
+.txt/
+txt/

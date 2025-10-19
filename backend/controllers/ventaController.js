@@ -1,64 +1,116 @@
 // backend/controllers/ventaController.js
 const Venta = require('../models/venta');
+const { validateProductosVenta, formatSQLiteError } = require('../utils/validations');
+const { logOperacion } = require('../utils/logger');
 
-// Obtener todas las ventas
+// Obtener ventas con paginación
 async function getAll(req, res) {
     try {
-        const ventas = await Venta.getAll();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const fechaInicio = req.query.fechaInicio || null;
+        const fechaFin = req.query.fechaFin || null;
+
+        // Validar parámetros
+        if (page < 1 || isNaN(page)) {
+            return res.status(400).json({
+                success: false,
+                message: "El número de página debe ser un número positivo",
+                data: null
+            });
+        }
+
+        if (limit < 1 || isNaN(limit)) {
+            return res.status(400).json({
+                success: false,
+                message: "El límite debe ser un número positivo",
+                data: null
+            });
+        }
+
+        // Validar fechas
+        if (fechaInicio && isNaN(Date.parse(fechaInicio))) {
+            return res.status(400).json({
+                success: false,
+                message: "Fecha de inicio inválida",
+                data: null
+            });
+        }
+
+        if (fechaFin && isNaN(Date.parse(fechaFin))) {
+            return res.status(400).json({
+                success: false,
+                message: "Fecha de fin inválida",
+                data: null
+            });
+        }
+
+        const resultado = await Venta.getAll(page, limit, fechaInicio, fechaFin);
+        
         res.json({
             success: true,
             message: "Ventas obtenidas correctamente",
-            data: ventas.data
+            data: resultado.items,
+            pagination: {
+                total: resultado.total,
+                page: resultado.page,
+                totalPages: resultado.totalPages
+            }
         });
     } catch (err) {
         console.error('Error al obtener ventas:', err);
         res.status(500).json({
             success: false,
-            message: 'Error al obtener ventas',
-            data: null
+            message: formatSQLiteError(err),
+            error: err.message
         });
     }
 }
 
-// Crear una nueva venta (sin cliente)
+// Crear una nueva venta
 async function create(req, res) {
     try {
         const { productos } = req.body;
 
-        if (!Array.isArray(productos) || productos.length === 0) {
+        // Validar productos
+        const validacion = validateProductosVenta(productos);
+        if (!validacion.isValid) {
+            logOperacion('VENTA_CREACION_FALLIDA', 'Intento fallido de crear venta', { productos, errors: validacion.errors });
             return res.status(400).json({
                 success: false,
-                message: "Debe enviar al menos un producto",
-                data: null
+                message: "Datos de venta inválidos",
+                errors: validacion.errors
             });
         }
 
-        for (const item of productos) {
-            if (!item.producto_id || !Number.isInteger(item.producto_id) || item.producto_id < 1) {
-                return res.status(400).json({
-                    success: false,
-                    message: `Producto inválido en la lista`,
-                    data: null
-                });
-            }
-            if (!item.cantidad || !Number.isInteger(item.cantidad) || item.cantidad < 1) {
-                return res.status(400).json({
-                    success: false,
-                    message: `Cantidad inválida para el producto ID ${item.producto_id}`,
-                    data: null
-                });
-            }
-        }
+        // Crear la venta con los datos validados
+        const result = await Venta.create({ productos: validacion.data });
 
-        const result = await Venta.create({ productos });
-        res.status(201).json(result);
+        logOperacion('VENTA_CREADA', 'Venta creada exitosamente', { productos: validacion.data, venta: result });
+        res.status(201).json({
+            success: true,
+            message: "Venta creada exitosamente",
+            data: result
+        });
 
     } catch (err) {
+        logOperacion('VENTA_CREACION_ERROR', 'Error al crear venta', { error: err.message });
         console.error('Error al crear venta:', err);
+
+        // Si el error es por stock insuficiente
+        if (err.message.includes('stock insuficiente')) {
+            logOperacion('VENTA_STOCK_INSUFICIENTE', 'Stock insuficiente al crear venta', { error: err.message });
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                error: 'INSUFFICIENT_STOCK'
+            });
+        }
+
         res.status(500).json({
             success: false,
-            message: 'Error al crear venta',
-            data: null
+            message: formatSQLiteError(err),
+            error: err.message
         });
     }
 }

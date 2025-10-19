@@ -1,37 +1,50 @@
 // backend/app.js
 require("dotenv").config();
+
 const express = require("express");
 const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
 const app = express();
+
 
 // Middlewares globales
 app.use(helmet()); // Seguridad en cabeceras HTTP
 app.use(morgan("dev")); // Logging de peticiones
 app.use(express.json()); // Reemplaza a body-parser
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser()); // Habilita req.cookies
 
 // Configuración de CORS (ajusta dominios en producción)
+const allowedOrigin = process.env.CLIENT_URL || "http://localhost:5173";
 app.use(cors({
-    origin: ["http://localhost:5173"], // Ajusta según tu frontend
+    origin: allowedOrigin,
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }));
 
 // Rutas con prefijo /api
-const productosRoutes = require("./routes/productos");
-app.use("/api/productos", productosRoutes);
+// Antes: const productosRoutes = require("./routes/productos");
+// Ahora cargamos desde services (MVC)
 
-const ventasRoutes = require("./routes/ventas");
-app.use("/api/ventas", ventasRoutes);
+const { verificarToken } = require("./middleware/auth");
+
+const productosRoutes = require("./services/products/routes");
+app.use("/api/productos", verificarToken, productosRoutes);
+
+const ventasRoutes = require("./services/sales/routes");
+app.use("/api/ventas", verificarToken, ventasRoutes);
 
 const reportesRoutes = require("./routes/reportes");
-app.use("/api/reportes", reportesRoutes);
+app.use("/api/reportes", verificarToken, reportesRoutes);
 
 const adminRoutes = require("./routes/admin");
 app.use("/api/admin", adminRoutes);
+
+const backupRoutes = require("./routes/backup");
+app.use("/api/backup", verificarToken, backupRoutes);
 
 // Ruta base para verificar estado de la API
 app.get("/api", (req, res) => {

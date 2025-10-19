@@ -1,19 +1,26 @@
 import { mostrarMensaje, mostrarLoading, confirmar, formatoGuarani } from "./utils.js";
 import CONFIG from "./config.js";
 
+import { createPagination } from './components/pagination.js';
+
 export let productosCache = []; // Cache global de productos
+let currentPage = 1;
+let searchTerm = '';
 
 const API_PRODUCTOS = `${CONFIG.API_BASE_URL}/productos`;
 
 // Tabla y formulario
 const tablaProductosBody = document.querySelector("#tabla-productos tbody");
 const formProducto = document.getElementById("form-producto");
+const paginationContainer = document.getElementById("pagination-container");
 
-// Cargar productos desde API
-export async function cargarProductos() {
+// Cargar productos desde API con paginación
+export async function cargarProductos(page = 1, limit = 10, search = '') {
     mostrarLoading(true);
     try {
-        const res = await fetch(API_PRODUCTOS);
+        const res = await fetch(API_PRODUCTOS, {
+            credentials: 'include'
+        });
         const productos = await res.json();
         productosCache = productos;
         renderTablaProductos();
@@ -93,7 +100,8 @@ export async function guardarProducto(producto) {
         await fetch(url, {
             method: metodo,
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(producto)
+            body: JSON.stringify(producto),
+            credentials: 'include'
         });
 
         await cargarProductos();
@@ -108,7 +116,7 @@ export async function eliminarProducto(id) {
     if (!confirmar("¿Seguro que deseas eliminar este producto?")) return;
     mostrarLoading(true);
     try {
-        await fetch(`${API_PRODUCTOS}/${id}`, { method: "DELETE" });
+    await fetch(`${API_PRODUCTOS}/${id}`, { method: "DELETE", credentials: 'include' });
         mostrarMensaje("Producto eliminado", "success");
         await cargarProductos();
     } catch (error) {
